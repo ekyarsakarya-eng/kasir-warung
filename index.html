@@ -276,6 +276,8 @@ th { background: #34495e; color: white; }
     </div>
   </div>
 </div>
+
+<script>
 let DB = {
   users: { admin: 'admin123', kasir: 'kasir123' },
   menu: [
@@ -606,8 +608,7 @@ function tambahMenu() {
   if (!nama ||!harga || harga <= 0) return alert('Lengkapi nama & harga menu!');
   DB.menu.push({id: Date.now(), nama, harga, kategori});
   saveDB();
-  document
-  .getElementById('namaMenu').value = '';
+  document.getElementById('namaMenu').value = '';
   document.getElementById('hargaMenu').value = '';
   renderMenu();
   renderTabelMenu();
@@ -677,7 +678,6 @@ function renderLaporan() {
   document.getElementById('omzetHariIni').innerText = formatRp(omzet);
   document.getElementById('totalTrx').innerText = trxHariIni.length;
 
-  // Grup per tanggal buat fitur hapus per tanggal
   const perTanggal = {};
   DB.transaksi.forEach(t => {
     const tgl = new Date(t.waktu).toDateString();
@@ -694,7 +694,6 @@ function renderLaporan() {
     Object.keys(perTanggal).sort().reverse().forEach(tgl => {
       const trxList = perTanggal[tgl];
       const totalHari = trxList.reduce((sum, t) => sum + t.total, 0);
-      const isHariIni = tgl === hariIni;
 
       let html = `
         <div class="laporan-tanggal">
@@ -872,7 +871,6 @@ function exportCSV() {
     const items = t.items.map(i => `${i.nama} x${i.qty}`).join('; ');
     csv += `"${formatTanggal(t.waktu)}","${t.waktuDisplay}","${t.kasir}","${items}",${t.subtotal},${t.pajak},${t.total},${t.bayar},${t.kembali}\n`;
   });
-    });
   const blob = new Blob([csv], { type: 'text/csv' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
@@ -1073,19 +1071,8 @@ async function printStruk(trx) {
     showPrinterStatus('Gagal print: ' + err.message, 'err');
   }
 }
-  </div> <-- penutup div modal-content
-  </div> <-- penutup div modalEdit
-  <script> <-- BUKA SCRIPT CUMA SEKALI DI SINI
-    let DB = { ... };
-    let currentUser = null;
-    ... semua fungsi JavaScript ...
-    ...
-    async function printStruk(trx) {
-      ...
-      showPrinterStatus('Gagal print: ' + err.message, 'err');
-    }
 
-    loadDB(); // <-- Ini di DALAM script, bukan di luar
-  </script> <-- TUTUP SCRIPT CUMA SEKALI DI SINI
+loadDB();
+</script>
 </body>
 </html>
