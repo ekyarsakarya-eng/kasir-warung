@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -41,8 +42,10 @@ button.link:hover { background: #ecf0f1; }
 .badge { background: #3498db; color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px; }
 .badge.minuman { background: #9b59b6; }
 .cart-item { display: flex; justify-content: space-between; padding: 8px 0; align-items: center; }
+.cart-item-name { flex: 1; }
 .qty-control { display: flex; align-items: center; gap: 4px; }
 .qty-btn { width: 32px; height: 32px; padding: 0; margin: 0; font-size: 18px; }
+.btn-hapus-item { width: auto; padding: 4px 8px; font-size: 12px; margin-left: 8px; }
 .total-box { background: #ecf0f1; padding: 16px; border-radius: 8px; margin: 16px 0; }
 .total-row { display: flex; justify-content: space-between; margin: 8px 0; font-size: 18px; }
 .total-row.grand { font-weight: bold; font-size: 22px; color: #27ae60; padding-top: 8px; border-top: 2px solid #bdc3c7; }
@@ -73,8 +76,6 @@ th { background: #34495e; color: white; }
 </style>
 </head>
 <body>
-
-<!-- LOGIN PAGE - ADA TOMBOL LUPA PASSWORD -->
 <div id="loginPage" class="container">
   <div class="login-box">
     <img id="loginBanner" src="" style="width:100%;border-radius:8px;margin-bottom:16px;display:none;">
@@ -86,8 +87,6 @@ th { background: #34495e; color: white; }
     <div id="resetInfo" class="status ok hidden" style="margin-top:12px;"></div>
   </div>
 </div>
-
-<!-- MAIN APP -->
 <div id="appPage" class="container hidden">
   <div class="header">
     <div class="header-left">
@@ -99,8 +98,6 @@ th { background: #34495e; color: white; }
     </div>
     <button class="danger" onclick="logout()" style="width:auto;">Keluar</button>
   </div>
-
-  <!-- ADMIN TABS -->
   <div id="adminTabs" class="tabs hidden">
     <div class="tab active" onclick="showTab('penjualan')">Penjualan</div>
     <div class="tab" onclick="showTab('menu')">Kelola Menu</div>
@@ -108,15 +105,12 @@ th { background: #34495e; color: white; }
     <div class="tab" onclick="showTab('bulanan')">Laporan Bulanan</div>
     <div class="tab" onclick="showTab('pengaturan')">Pengaturan</div>
   </div>
-
-  <!-- HALAMAN PENJUALAN -->
   <div id="penjualanTab" class="grid">
     <div class="card">
       <h3>Daftar Menu</h3>
       <input type="text" id="searchMenu" placeholder="Cari menu..." oninput="renderMenu()">
       <div id="menuList"></div>
     </div>
-
     <div class="card">
       <h3>Keranjang</h3>
       <div id="cartList"></div>
@@ -124,19 +118,15 @@ th { background: #34495e; color: white; }
         <div class="total-row"><span>Subtotal:</span><span id="subtotal">Rp 0</span></div>
         <div class="total-row"><span>Pajak <span id="pajakPersen">0</span>%:</span><span id="pajak">Rp 0</span></div>
         <div class="total-row grand"><span>TOTAL BAYAR:</span><span id="total">Rp 0</span></div>
-
         <label style="font-size:14px; color:#7f8c8d; margin-top:8px; display:block;">Uang Bayar:</label>
         <input type="number" id="bayar" placeholder="Masukkan uang bayar" oninput="hitungKembali()">
-
         <div class="nominal-cepat">
           <button class="secondary" onclick="setBayar('pas')">Uang Pas</button>
           <button class="secondary" onclick="setBayar(50000)">50rb</button>
           <button class="secondary" onclick="setBayar(100000)">100rb</button>
         </div>
-
         <div class="total-row kembali" id="kembaliRow"><span>KEMBALIAN:</span><span id="kembali">Rp 0</span></div>
       </div>
-
       <button class="warning" onclick="connectPrinter()">🔗 Hubungkan Printer</button>
       <div class="flex">
         <button class="secondary" onclick="simpanTransaksi(false)" id="btnSimpan">💾 Simpan Transaksi</button>
@@ -146,8 +136,6 @@ th { background: #34495e; color: white; }
       <div id="printerStatus" class="status hidden"></div>
     </div>
   </div>
-
-  <!-- HALAMAN KELOLA MENU -->
   <div id="menuTab" class="card hidden">
     <h3>Tambah Menu Baru</h3>
     <div class="flex">
@@ -161,15 +149,12 @@ th { background: #34495e; color: white; }
       </select>
       <button onclick="tambahMenu()">Tambah Menu</button>
     </div>
-
     <h3 style="margin-top:24px;">Daftar Semua Menu</h3>
     <table>
       <thead><tr><th>Nama</th><th>Kategori</th><th>Harga</th><th>Aksi</th></tr></thead>
       <tbody id="tabelMenu"></tbody>
     </table>
   </div>
-
-  <!-- HALAMAN LAPORAN HARIAN -->
   <div id="laporanTab" class="card hidden">
     <h3>Laporan Penjualan Hari Ini</h3>
     <div class="stats">
@@ -191,8 +176,6 @@ th { background: #34495e; color: white; }
       <button class="danger" onclick="resetLaporan()">🗑️ Hapus Semua Laporan</button>
     </div>
   </div>
-
-  <!-- HALAMAN LAPORAN BULAN -->
   <div id="bulananTab" class="card hidden">
     <h3>Laporan Bulanan</h3>
     <div class="flex">
@@ -200,7 +183,6 @@ th { background: #34495e; color: white; }
       <select id="tahunFilter"></select>
       <button onclick="renderLaporanBulanan()">Tampilkan</button>
     </div>
-
     <div class="stats">
       <div class="stat-box">
         <h4>Omzet Bulan Ini</h4>
@@ -215,65 +197,59 @@ th { background: #34495e; color: white; }
         <div class="value" id="rataHari">Rp 0</div>
       </div>
     </div>
-
     <h3 style="margin-top:24px;">Rekap Per Hari</h3>
     <table>
       <thead><tr><th>Tanggal</th><th>Jumlah Transaksi</th><th>Total Omzet</th></tr></thead>
       <tbody id="tabelBulanan"></tbody>
     </table>
-
     <h3 style="margin-top:24px;">Menu Terlaris Bulan Ini</h3>
     <table>
       <thead><tr><th>Nama Menu</th><th>Terjual</th><th>Total Pendapatan</th></tr></thead>
       <tbody id="tabelMenuTerlaris"></tbody>
     </table>
-
     <div class="flex" style="margin-top:16px;">
       <button class="purple" onclick="exportLaporanBulanan()">📊 Export Excel Bulanan</button>
       <button class="secondary" onclick="exportCSV()">📄 Export CSV</button>
     </div>
   </div>
-
-  <!-- HALAMAN PENGATURAN -->
   <div id="pengaturanTab" class="card hidden">
     <h3>🎨 Branding Warung</h3>
     <p style="font-size:14px;color:#7f8c8d;margin-bottom:16px;">Perubahan akan langsung muncul di halaman login & header aplikasi</p>
-
     <label>Nama Warung:</label>
     <input type="text" id="namaToko" placeholder="Contoh: Warung Makan Barokah">
-
     <label>Alamat:</label>
     <textarea id="alamatToko" placeholder="Alamat lengkap warung" rows="2"></textarea>
-
     <label>Pajak (%):</label>
     <input type="number" id="pajakSetting" placeholder="Pajak %" min="0" max="100">
-
     <label>Logo/Icon Aplikasi (512x512px - muncul di header & icon HP):</label>
     <input type="file" id="inputLogo" accept="image/png,image/jpeg" onchange="previewLogo(event)">
     <img id="previewLogo" class="preview-img" style="display:none;">
-
     <label>Banner/Foto Warung (muncul di halaman login):</label>
     <input type="file" id="inputBanner" accept="image/png,image/jpeg" onchange="previewBanner(event)">
     <img id="previewBanner" class="banner-preview" style="display:none;">
-
     <div class="info-box">
       <strong>💡 Cara ganti icon aplikasi di HP:</strong><br>
       1. Simpan pengaturan di bawah<br>
       2. Update file <code>manifest.json</code>, <code>icon-192.png</code>, <code>icon-512.png</code> di GitHub<br>
       3. Hapus aplikasi lama dari HP > Install ulang dari Chrome
     </div>
-
     <button onclick="simpanPengaturan()">💾 Simpan Semua Pengaturan</button>
     <button class="secondary" onclick="downloadManifest()">📥 Download manifest.json Baru</button>
-
+    <h3 style="margin-top:24px;">💾 Backup & Restore Data</h3>
+    <div class="info-box">
+      <strong>Backup:</strong> Download semua data menu + transaksi ke file<br>
+      <strong>Restore:</strong> Upload file backup ke HP/Laptop lain biar datanya sama persis
+    </div>
+    <button class="secondary" onclick="backupData()">📥 Download Backup Semua Data</button>
+    <label style="margin-top:12px;display:block;">Restore dari file backup:</label>
+    <input type="file" id="restoreFile" accept=".json" onchange="restoreData(event)">
+    <div id="restoreStatus" class="status hidden"></div>
     <h3 style="margin-top:24px;">🔐 Keamanan</h3>
     <input type="password" id="passLama" placeholder="Password Lama">
     <input type="password" id="passBaru" placeholder="Password Baru">
     <button onclick="ubahPassword()">Ubah Password Admin</button>
   </div>
 </div>
-
-<!-- MODAL EDIT MENU -->
 <div id="modalEdit" class="modal hidden">
   <div class="modal-content">
     <h3>Edit Menu</h3>
@@ -290,9 +266,6 @@ th { background: #34495e; color: white; }
     </div>
   </div>
 </div>
-
-<script>
-// === DATABASE LOCALSTORAGE ===
 let DB = {
   users: { admin: 'admin123', kasir: 'kasir123' },
   menu: [
@@ -302,15 +275,8 @@ let DB = {
     {id: 4, nama: 'Es Jeruk', harga: 5000, kategori: 'Minuman'}
   ],
   transaksi: [],
-  setting: {
-    namaToko: 'Warung Makan Barokah',
-    alamat: 'Jl. Contoh No.123',
-    pajak: 0,
-    logo: '',
-    banner: ''
-  }
+  setting: { namaToko: 'Warung Makan Barokah', alamat: 'Jl. Contoh No.123', pajak: 0, logo: '', banner: '' }
 };
-
 let currentUser = null;
 let currentRole = null;
 let cart = [];
@@ -318,21 +284,15 @@ let printerDevice = null;
 let printerCharacteristic = null;
 let transaksiTerakhir = null;
 
-// === INIT ===
 function loadDB() {
   const saved = localStorage.getItem('kasirWarungDB');
   if (saved) DB = JSON.parse(saved);
-
-  // Apply settings
   document.getElementById('namaToko').value = DB.setting.namaToko;
   document.getElementById('alamatToko').value = DB.setting.alamat;
   document.getElementById('pajakSetting').value = DB.setting.pajak;
   document.getElementById('pajakPersen').innerText = DB.setting.pajak;
-
-  // Apply branding
   document.getElementById('appTitle').innerText = DB.setting.namaToko;
   document.getElementById('loginTitle').innerText = DB.setting.namaToko;
-
   if (DB.setting.logo) {
     document.getElementById('headerLogo').src = DB.setting.logo;
     document.getElementById('headerLogo').style.display = 'block';
@@ -340,14 +300,12 @@ function loadDB() {
     document.getElementById('previewLogo').style.display = 'block';
     document.getElementById('appIcon').href = DB.setting.logo;
   }
-
   if (DB.setting.banner) {
     document.getElementById('loginBanner').src = DB.setting.banner;
     document.getElementById('loginBanner').style.display = 'block';
     document.getElementById('previewBanner').src = DB.setting.banner;
     document.getElementById('previewBanner').style.display = 'block';
   }
-
   initTahunFilter();
   initBulanFilter();
 }
@@ -383,7 +341,6 @@ function formatTanggal(dateStr) {
   return d.toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' });
 }
 
-// === PREVIEW IMAGE ===
 function previewLogo(event) {
   const file = event.target.files[0];
   if (file) {
@@ -408,7 +365,6 @@ function previewBanner(event) {
   }
 }
 
-// === LOGIN + LUPA PASSWORD ===
 function login() {
   const u = document.getElementById('username').value;
   const p = document.getElementById('password').value;
@@ -454,7 +410,6 @@ function logout() {
   document.getElementById('resetInfo').classList.add('hidden');
 }
 
-// === TAB ADMIN ===
 function showTab(tab) {
   ['penjualan', 'menu', 'laporan', 'bulanan', 'pengaturan'].forEach(t => {
     document.getElementById(t + 'Tab').classList.add('hidden');
@@ -464,12 +419,14 @@ function showTab(tab) {
   event.target.classList.add('active');
 }
 
-// === MENU ===
 function renderMenu() {
   const search = document.getElementById('searchMenu').value.toLowerCase();
   const list = document.getElementById('menuList');
   list.innerHTML = '';
   DB.menu.filter(m => m.nama.toLowerCase().includes(search)).forEach(m => {
+    const cartItem = cart.find(c => c.id === m.id);
+    const qty = cartItem ? cartItem.qty : 0;
+    
     list.innerHTML += `
       <div class="menu-item">
         <div>
@@ -477,17 +434,34 @@ function renderMenu() {
           <span class="badge ${m.kategori === 'Minuman'? 'minuman' : ''}">${m.kategori}</span>
           <span>${formatRp(m.harga)}</span>
         </div>
-        <button style="width:auto;padding:8px 16px;" onclick="addToCart(${m.id})">+</button>
+        <div class="qty-control">
+          ${qty > 0 ? `<button class="qty-btn danger" onclick="kurangiDariMenu(${m.id})">-</button>
+          <span style="min-width:30px;text-align:center;font-weight:bold;">${qty}</span>` : ''}
+          <button class="qty-btn" onclick="tambahDariMenu(${m.id})">+</button>
+        </div>
       </div>`;
   });
 }
 
-function addToCart(id) {
+function tambahDariMenu(id) {
   const item = DB.menu.find(m => m.id === id);
   const existing = cart.find(c => c.id === id);
   if (existing) existing.qty++;
   else cart.push({...item, qty: 1});
   renderCart();
+  renderMenu();
+}
+
+function kurangiDariMenu(id) {
+  const existing = cart.find(c => c.id === id);
+  if (existing) {
+    existing.qty--;
+    if (existing.qty <= 0) {
+      cart = cart.filter(c => c.id !== id);
+    }
+    renderCart();
+    renderMenu();
+  }
 }
 
 function renderCart() {
@@ -525,14 +499,10 @@ function hitungTotal() {
   document.getElementById('subtotal').innerText = formatRp(subtotal);
   document.getElementById('pajak').innerText = formatRp(pajak);
   document.getElementById('total').innerText = formatRp(total);
-
-  // Auto-fill uang bayar = total, tapi cuma kalau masih kosong
   const bayarInput = document.getElementById('bayar');
   if (cart.length > 0 && bayarInput.value === '') {
     bayarInput.value = total;
   }
-  
-  // Langsung hitung kembalian tanpa panggil fungsi lain
   hitungKembaliLangsung(total);
   return {subtotal, pajak, total};
 }
@@ -542,9 +512,7 @@ function hitungKembaliLangsung(total) {
   const kembali = bayar - total;
   const kembaliEl = document.getElementById('kembali');
   const kembaliRow = document.getElementById('kembaliRow');
-
   kembaliEl.innerText = formatRp(Math.abs(kembali));
-
   if (kembali < 0) {
     kembaliRow.classList.remove('pas');
     kembaliRow.querySelector('span').innerText = 'KURANG:';
@@ -565,22 +533,19 @@ function setBayar(jumlah) {
   } else {
     document.getElementById('bayar').value = jumlah;
   }
-  hitungKembaliLangsung(total); // Langsung hitung, ga muter-muter
+  hitungKembaliLangsung(total);
 }
 
-// Fungsi ini buat dipanggil dari oninput="hitungKembali()"
 function hitungKembali() {
-  const total = cart.reduce((sum, c) => sum + c.harga * c.qty, 0) * (100 + DB.setting.pajak) / 100;
-  hitungKembaliLangsung(Math.round(total));
+  const total = Math.round(cart.reduce((sum, c) => sum + c.harga * c.qty, 0) * (100 + DB.setting.pajak) / 100);
+  hitungKembaliLangsung(total);
 }
 
-// === TRANSAKSI ===
 function simpanTransaksi(printLangsung = false) {
   if (cart.length === 0) return alert('Keranjang kosong!');
   const {subtotal, pajak, total} = hitungTotal();
   const bayar = parseInt(document.getElementById('bayar').value) || 0;
   if (bayar < total) return alert('Uang bayar kurang!');
-
   const trx = {
     id: Date.now(),
     waktu: new Date().toISOString(),
@@ -590,23 +555,18 @@ function simpanTransaksi(printLangsung = false) {
     kembali: bayar - total,
     kasir: currentUser
   };
-
   DB.transaksi.push(trx);
   saveDB();
   transaksiTerakhir = trx;
-
   document.getElementById('btnPrintTerakhir').disabled = false;
   renderLaporan();
   renderLaporanBulanan();
-
   if (printLangsung) {
     printStruk(trx);
   }
-
   cart = [];
   document.getElementById('bayar').value = '';
   renderCart();
-
   alert(`Transaksi berhasil!\nTotal: ${formatRp(total)}\nKembali: ${formatRp(trx.kembali)}`);
 }
 
@@ -615,13 +575,11 @@ function printStrukTerakhir() {
   printStruk(transaksiTerakhir);
 }
 
-// === KELOLA MENU ===
 function tambahMenu() {
   const nama = document.getElementById('namaMenu').value.trim();
   const harga = parseInt(document.getElementById('hargaMenu').value);
   const kategori = document.getElementById('kategoriMenu').value;
   if (!nama ||!harga || harga <= 0) return alert('Lengkapi nama & harga menu!');
-
   DB.menu.push({id: Date.now(), nama, harga, kategori});
   saveDB();
   document.getElementById('namaMenu').value = '';
@@ -662,14 +620,12 @@ function simpanEditMenu() {
   const nama = document.getElementById('editNama').value.trim();
   const harga = parseInt(document.getElementById('editHarga').value);
   const kategori = document.getElementById('editKategori').value;
-
   if (!nama ||!harga || harga <= 0) return alert('Lengkapi data!');
-
   const menu = DB.menu.find(m => m.id === id);
   menu.nama = nama;
+  menu.harga = harga
   menu.harga = harga;
   menu.kategori = kategori;
-
   saveDB();
   renderMenu();
   renderTabelMenu();
@@ -689,15 +645,13 @@ function hapusMenu(id) {
     renderTabelMenu();
   }
 }
-// === LAPORAN === Lanjutan
+
 function renderLaporan() {
   const hariIni = new Date().toDateString();
   const trxHariIni = DB.transaksi.filter(t => new Date(t.waktu).toDateString() === hariIni);
   const omzet = trxHariIni.reduce((sum, t) => sum + t.total, 0);
-
   document.getElementById('omzetHariIni').innerText = formatRp(omzet);
   document.getElementById('totalTrx').innerText = trxHariIni.length;
-
   const tbody = document.getElementById('tabelLaporan');
   tbody.innerHTML = '';
   if (trxHariIni.length === 0) {
@@ -717,25 +671,19 @@ function renderLaporan() {
   }
 }
 
-// === LAPORAN BULAN ===
 function renderLaporanBulanan() {
   const bulan = parseInt(document.getElementById('bulanFilter').value);
   const tahun = parseInt(document.getElementById('tahunFilter').value);
-
   const trxBulan = DB.transaksi.filter(t => {
     const d = new Date(t.waktu);
     return d.getMonth() === bulan && d.getFullYear() === tahun;
   });
-
   const omzet = trxBulan.reduce((sum, t) => sum + t.total, 0);
   const hariUnik = [...new Set(trxBulan.map(t => new Date(t.waktu).toDateString()))].length;
   const rataHari = hariUnik > 0? omzet / hariUnik : 0;
-
   document.getElementById('omzetBulan').innerText = formatRp(omzet);
   document.getElementById('trxBulan').innerText = trxBulan.length;
   document.getElementById('rataHari').innerText = formatRp(rataHari);
-
-  // Rekap per hari
   const perHari = {};
   trxBulan.forEach(t => {
     const tgl = new Date(t.waktu).toDateString();
@@ -743,7 +691,6 @@ function renderLaporanBulanan() {
     perHari[tgl].count++;
     perHari[tgl].total += t.total;
   });
-
   const tbodyHari = document.getElementById('tabelBulanan');
   tbodyHari.innerHTML = '';
   if (Object.keys(perHari).length === 0) {
@@ -758,8 +705,6 @@ function renderLaporanBulanan() {
         </tr>`;
     });
   }
-
-  // Menu terlaris
   const menuStats = {};
   trxBulan.forEach(t => {
     t.items.forEach(i => {
@@ -768,7 +713,6 @@ function renderLaporanBulanan() {
       menuStats[i.nama].total += i.harga * i.qty;
     });
   });
-
   const tbodyMenu = document.getElementById('tabelMenuTerlaris');
   tbodyMenu.innerHTML = '';
   const sortedMenu = Object.keys(menuStats).sort((a, b) => menuStats[b].qty - menuStats[a].qty);
@@ -786,11 +730,9 @@ function renderLaporanBulanan() {
   }
 }
 
-// === EXPORT EXCEL ===
 function exportLaporanHarian() {
   const hariIni = new Date().toDateString();
   const trxHariIni = DB.transaksi.filter(t => new Date(t.waktu).toDateString() === hariIni);
-
   const data = trxHariIni.map(t => ({
     'Waktu': t.waktuDisplay,
     'Kasir': t.kasir,
@@ -801,7 +743,6 @@ function exportLaporanHarian() {
     'Bayar': t.bayar,
     'Kembali': t.kembali
   }));
-
   const ws = XLSX.utils.json_to_sheet(data);
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, 'Laporan Harian');
@@ -812,12 +753,10 @@ function exportLaporanBulanan() {
   const bulan = parseInt(document.getElementById('bulanFilter').value);
   const tahun = parseInt(document.getElementById('tahunFilter').value);
   const namaBulan = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'][bulan];
-
   const trxBulan = DB.transaksi.filter(t => {
     const d = new Date(t.waktu);
     return d.getMonth() === bulan && d.getFullYear() === tahun;
   });
-
   const dataDetail = trxBulan.map(t => ({
     'Tanggal': formatTanggal(t.waktu),
     'Waktu': t.waktuDisplay,
@@ -827,7 +766,6 @@ function exportLaporanBulanan() {
     'Pajak': t.pajak,
     'Total': t.total
   }));
-
   const perHari = {};
   trxBulan.forEach(t => {
     const tgl = formatTanggal(t.waktu);
@@ -840,7 +778,6 @@ function exportLaporanBulanan() {
     'Jumlah Transaksi': perHari[tgl].count,
     'Total Omzet': perHari[tgl].total
   }));
-
   const menuStats = {};
   trxBulan.forEach(t => {
     t.items.forEach(i => {
@@ -854,7 +791,6 @@ function exportLaporanBulanan() {
     'Terjual': menuStats[nama].qty,
     'Total Pendapatan': menuStats[nama].total
   })).sort((a, b) => b.Terjual - a.Terjual);
-
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(dataDetail), 'Detail Transaksi');
   XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(dataHarian), 'Rekap Harian');
@@ -869,13 +805,11 @@ function exportCSV() {
     const d = new Date(t.waktu);
     return d.getMonth() === bulan && d.getFullYear() === tahun;
   });
-
   let csv = 'Tanggal,Waktu,Kasir,Items,Subtotal,Pajak,Total,Bayar,Kembali\n';
   trxBulan.forEach(t => {
     const items = t.items.map(i => `${i.nama} x${i.qty}`).join('; ');
     csv += `"${formatTanggal(t.waktu)}","${t.waktuDisplay}","${t.kasir}","${items}",${t.subtotal},${t.pajak},${t.total},${t.bayar},${t.kembali}\n`;
   });
-
   const blob = new Blob([csv], { type: 'text/csv' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
@@ -894,17 +828,13 @@ function resetLaporan() {
   }
 }
 
-// === PENGATURAN ===
 function simpanPengaturan() {
   DB.setting.namaToko = document.getElementById('namaToko').value.trim();
   DB.setting.alamat = document.getElementById('alamatToko').value.trim();
   DB.setting.pajak = parseInt(document.getElementById('pajakSetting').value) || 0;
-
   const logoFile = document.getElementById('inputLogo').files[0];
   const bannerFile = document.getElementById('inputBanner').files[0];
-
   let promises = [];
-
   if (logoFile) {
     promises.push(new Promise(resolve => {
       const reader = new FileReader();
@@ -915,7 +845,6 @@ function simpanPengaturan() {
       reader.readAsDataURL(logoFile);
     }));
   }
-
   if (bannerFile) {
     promises.push(new Promise(resolve => {
       const reader = new FileReader();
@@ -926,7 +855,6 @@ function simpanPengaturan() {
       reader.readAsDataURL(bannerFile);
     }));
   }
-
   Promise.all(promises).then(() => {
     saveDB();
     loadDB();
@@ -945,21 +873,10 @@ function downloadManifest() {
     background_color: "#2c3e50",
     theme_color: "#27ae60",
     icons: [
-      {
-        src: "./icon-192.png",
-        sizes: "192x192",
-        type: "image/png",
-        purpose: "any maskable"
-      },
-      {
-        src: "./icon-512.png",
-        sizes: "512x512",
-        type: "image/png",
-        purpose: "any maskable"
-      }
+      { src: "./icon-192.png", sizes: "192x192", type: "image/png", purpose: "any maskable" },
+      { src: "./icon-512.png", sizes: "512x512", type: "image/png", purpose: "any maskable" }
     ]
   };
-
   const blob = new Blob([JSON.stringify(manifest, null, 2)], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
@@ -981,7 +898,45 @@ function ubahPassword() {
   alert('Password admin berhasil diubah!');
 }
 
-// === BLUETOOTH PRINTER ===
+function backupData() {
+  const dataStr = JSON.stringify(DB, null, 2);
+  const blob = new Blob([dataStr], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `backup_kasir_${new Date().toLocaleDateString('id-ID').replace(/\//g,'-')}.json`;
+  a.click();
+  alert('Backup berhasil didownload!\nKirim file ini ke device lain terus Restore.');
+}
+
+function restoreData(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const dataBaru = JSON.parse(e.target.result);
+      if (confirm('Yakin timpa semua data dengan file backup ini?\nData lama akan hilang!')) {
+        DB = dataBaru;
+        saveDB();
+        loadDB();
+        renderMenu();
+        renderTabelMenu();
+        renderLaporan();
+        renderLaporanBulanan();
+        document.getElementById('restoreStatus').innerText = '✅ Data berhasil di-restore!';
+        document.getElementById('restoreStatus').className = 'status ok';
+        document.getElementById('restoreStatus').classList.remove('hidden');
+      }
+    } catch (err) {
+      document.getElementById('restoreStatus').innerText = '❌ File backup rusak!';
+      document.getElementById('restoreStatus').className = 'status err';
+      document.getElementById('restoreStatus').classList.remove('hidden');
+    }
+  }
+  reader.readAsText(file);
+}
+
 async function connectPrinter() {
   try {
     showPrinterStatus('Mencari printer...', 'ok');
@@ -989,11 +944,9 @@ async function connectPrinter() {
       filters: [{ services: ['000018f0-0000-1000-8000-00805f9b34fb'] }],
       optionalServices: ['000018f0-0000-1000-8000-00805f9b34fb', '49535343-fe7d-4ae5-8fa9-9fafd205e455']
     });
-
     const server = await printerDevice.gatt.connect();
     const service = await server.getPrimaryService('000018f0-0000-1000-8000-00805f9b34fb');
     printerCharacteristic = await service.getCharacteristic('00002af1-0000-1000-8000-00805f9b34fb');
-
     showPrinterStatus('Printer terhubung: ' + printerDevice.name, 'ok');
   } catch (err) {
     showPrinterStatus('Gagal konek: ' + err.message, 'err');
@@ -1009,7 +962,6 @@ function showPrinterStatus(msg, type) {
 
 async function printStruk(trx) {
   if (!printerCharacteristic) return alert('Hubungkan printer dulu!');
-
   const ESC = '\x1B';
   const GS = '\x1D';
   const INIT = ESC + '@';
@@ -1018,7 +970,6 @@ async function printStruk(trx) {
   const BOLD_ON = ESC + 'E' + '\x01';
   const BOLD_OFF = ESC + 'E' + '\x00';
   const CUT = GS + 'V' + '\x00';
-
   let struk = INIT;
   struk += CENTER + BOLD_ON;
   struk += DB.setting.namaToko + '\n';
@@ -1030,12 +981,10 @@ async function printStruk(trx) {
   struk += `${trx.waktuDisplay}\n`;
   struk += `Kasir: ${trx.kasir}\n`;
   struk += '--------------------------------\n';
-
   trx.items.forEach(i => {
     struk += `${i.nama}\n`;
     struk += ` ${i.qty} x ${formatRp(i.harga)} = ${formatRp(i.harga * i.qty)}\n`;
   });
-
   struk += '--------------------------------\n';
   struk += `Subtotal: ${formatRp(trx.subtotal)}\n`;
   if (trx.pajak > 0) struk += `Pajak ${DB.setting.pajak}%: ${formatRp(trx.pajak)}\n`;
@@ -1048,7 +997,6 @@ async function printStruk(trx) {
   struk += '================================\n';
   struk += 'Terima Kasih!\n\n\n';
   struk += CUT;
-
   try {
     const encoder = new TextEncoder();
     const data = encoder.encode(struk);
@@ -1062,7 +1010,6 @@ async function printStruk(trx) {
   }
 }
 
-// === INIT ===
 loadDB();
 </script>
 </body>
