@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -33,6 +34,8 @@ button.link:hover { background: #ecf0f1; }
 .header { background: #2c3e50; color: white; padding: 16px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-radius: 8px; }
 .header-left { display: flex; align-items: center; gap: 12px; }
 .warung-logo { width: 48px; height: 48px; border-radius: 8px; object-fit: cover; background: white; }
+.header-info h2 { margin-bottom: 4px; font-size: 20px; }
+.header-info small { opacity: 0.8; font-size: 13px; }
 .grid { display: grid; grid-template-columns: 1fr; gap: 16px; }
 @media (min-width: 768px) {.grid { grid-template-columns: 1fr 1fr; } }
 .card { background: white; padding: 16px; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.08); margin-bottom: 16px; }
@@ -72,6 +75,10 @@ th { background: #34495e; color: white; }
 .preview-img { width: 100px; height: 100px; object-fit: cover; border-radius: 8px; border: 2px solid #ddd; margin: 8px 0; }
 .banner-preview { width: 100%; max-height: 150px; object-fit: cover; border-radius: 8px; margin: 8px 0; }
 .info-box { background: #e8f4f8; border-left: 4px solid #3498db; padding: 12px; margin: 12px 0; border-radius: 4px; font-size: 14px; }
+.admin-only.hidden { display: none!important; }
+.btn-hapus-tanggal { width: auto; padding: 4px 8px; font-size: 11px; }
+.laporan-tanggal { background: #ecf0f1; padding: 12px; border-radius: 8px; margin: 12px 0; }
+.laporan-tanggal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
 </style>
 </head>
 <body>
@@ -90,19 +97,19 @@ th { background: #34495e; color: white; }
   <div class="header">
     <div class="header-left">
       <img id="headerLogo" src="" class="warung-logo" style="display:none;">
-      <div>
-        <h2 id="roleTitle">Kasir Warung</h2>
+      <div class="header-info">
+        <h2 id="headerNamaWarung">Kasir Warung</h2>
         <small id="userInfo"></small>
       </div>
     </div>
     <button class="danger" onclick="logout()" style="width:auto;">Keluar</button>
   </div>
   <div id="adminTabs" class="tabs hidden">
-  <div class="tab active" onclick="showTab('penjualan')">Penjualan</div>
-  <div class="tab admin-only" onclick="showTab('menu')">Kelola Menu</div>
-  <div class="tab" onclick="showTab('laporan')">Laporan Harian</div>
-  <div class="tab admin-only" onclick="showTab('bulanan')">Laporan Bulanan</div>
-  <div class="tab admin-only" onclick="showTab('pengaturan')">Pengaturan</div>
+    <div class="tab active" onclick="showTab('penjualan')">Penjualan</div>
+    <div class="tab admin-only" onclick="showTab('menu')">Kelola Menu</div>
+    <div class="tab" onclick="showTab('laporan')">Laporan Harian</div>
+    <div class="tab admin-only" onclick="showTab('bulanan')">Laporan Bulanan</div>
+    <div class="tab admin-only" onclick="showTab('pengaturan')">Pengaturan</div>
   </div>
   <div id="penjualanTab" class="grid">
     <div class="card">
@@ -126,13 +133,11 @@ th { background: #34495e; color: white; }
         </div>
         <div class="total-row kembali" id="kembaliRow"><span>KEMBALIAN:</span><span id="kembali">Rp 0</span></div>
       </div>
-      <button class="warning" onclick="connectPrinter()">🔗 Hubungkan Printer</button>
       <div class="flex">
         <button class="secondary" onclick="simpanTransaksi(false)" id="btnSimpan">💾 Simpan Transaksi</button>
         <button class="purple" onclick="printStrukTerakhir()" id="btnPrintTerakhir" disabled>🖨️ Print Ulang Struk</button>
       </div>
       <button onclick="simpanTransaksi(true)" id="btnSimpanPrint">💾➕🖨️ Simpan & Print</button>
-      <div id="printerStatus" class="status hidden"></div>
     </div>
   </div>
   <div id="menuTab" class="card hidden">
@@ -166,14 +171,12 @@ th { background: #34495e; color: white; }
         <div class="value" id="totalTrx">0</div>
       </div>
     </div>
-    <table>
-      <thead><tr><th>Waktu</th><th>Items</th><th>Total</th><th>Bayar</th><th>Kembali</th><th>Kasir</th></tr></thead>
-      <tbody id="tabelLaporan"></tbody>
-    </table>
+    <h3 style="margin-top:24px;">Detail Transaksi Per Tanggal</h3>
+    <div id="laporanPerTanggal"></div>
     <div class="flex admin-only" style="margin-top:16px;">
-  <button class="purple" onclick="exportLaporanHarian()">📊 Export Excel Hari Ini</button>
-  <button class="danger" onclick="resetLaporan()">🗑️ Hapus Semua Laporan</button>
-</div>
+      <button class="purple" onclick="exportLaporanHarian()">📊 Export Excel Hari Ini</button>
+      <button class="danger" onclick="resetLaporan()">🗑️ Hapus Semua Laporan</button>
+    </div>
   </div>
   <div id="bulananTab" class="card hidden">
     <h3>Laporan Bulanan</h3>
@@ -206,10 +209,10 @@ th { background: #34495e; color: white; }
       <thead><tr><th>Nama Menu</th><th>Terjual</th><th>Total Pendapatan</th></tr></thead>
       <tbody id="tabelMenuTerlaris"></tbody>
     </table>
-    <div class="flex admin-only" style="margin-top:16px;">
-  <button class="purple" onclick="exportLaporanHarian()">📊 Export Excel Hari Ini</button>
-  <button class="danger" onclick="resetLaporan()">🗑️ Hapus Semua Laporan</button>
-</div>
+    <div class="flex" style="margin-top:16px;">
+      <button class="purple" onclick="exportLaporanBulanan()">📊 Export Excel Bulanan</button>
+      <button class="secondary" onclick="exportCSV()">📄 Export CSV</button>
+    </div>
   </div>
   <div id="pengaturanTab" class="card hidden">
     <h3>🎨 Branding Warung</h3>
@@ -234,6 +237,14 @@ th { background: #34495e; color: white; }
     </div>
     <button onclick="simpanPengaturan()">💾 Simpan Semua Pengaturan</button>
     <button class="secondary" onclick="downloadManifest()">📥 Download manifest.json Baru</button>
+
+    <h3 style="margin-top:24px;">🖨️ Pengaturan Printer</h3>
+    <div class="info-box">
+      Hubungkan printer Bluetooth thermal untuk cetak struk otomatis. Pastikan printer sudah di-pairing di HP.
+    </div>
+    <button class="warning" onclick="connectPrinter()">🔗 Hubungkan Printer Bluetooth</button>
+    <div id="printerStatus" class="status hidden"></div>
+
     <h3 style="margin-top:24px;">💾 Backup & Restore Data</h3>
     <div class="info-box">
       <strong>Backup:</strong> Download semua data menu + transaksi ke file<br>
@@ -265,7 +276,6 @@ th { background: #34495e; color: white; }
     </div>
   </div>
 </div>
-<script>
 let DB = {
   users: { admin: 'admin123', kasir: 'kasir123' },
   menu: [
@@ -293,6 +303,7 @@ function loadDB() {
   document.getElementById('pajakPersen').innerText = DB.setting.pajak;
   document.getElementById('appTitle').innerText = DB.setting.namaToko;
   document.getElementById('loginTitle').innerText = DB.setting.namaToko;
+  document.getElementById('headerNamaWarung').innerText = DB.setting.namaToko;
   if (DB.setting.logo) {
     document.getElementById('headerLogo').src = DB.setting.logo;
     document.getElementById('headerLogo').style.display = 'block';
@@ -374,12 +385,11 @@ function login() {
     document.getElementById('loginPage').classList.add('hidden');
     document.getElementById('appPage').classList.remove('hidden');
     document.getElementById('userInfo').innerText = `Login sebagai: ${u}`;
-    document.getElementById('roleTitle').innerText = currentRole === 'admin'? 'Dashboard Admin' : 'Kasir Penjualan';
+    document.getElementById('headerNamaWarung').innerText = DB.setting.namaToko;
     document.getElementById('adminTabs').classList.remove('hidden');
-document.getElementById('adminTabs').classList.remove('hidden');
-if (currentRole === 'kasir') {
-  document.querySelectorAll('.admin-only').forEach(el => el.classList.add('hidden'));
-}
+    if (currentRole === 'kasir') {
+      document.querySelectorAll('.admin-only').forEach(el => el.classList.add('hidden'));
+    }
     loadDB();
     renderMenu();
     renderCart();
@@ -430,7 +440,7 @@ function renderMenu() {
   DB.menu.filter(m => m.nama.toLowerCase().includes(search)).forEach(m => {
     const cartItem = cart.find(c => c.id === m.id);
     const qty = cartItem? cartItem.qty : 0;
-    
+
     list.innerHTML += `
       <div class="menu-item">
         <div>
@@ -537,6 +547,7 @@ function hitungKembaliLangsung(total) {
     document.getElementById('btnSimpanPrint').disabled = cart.length === 0;
   }
 }
+
 function setBayar(jumlah) {
   const total = hitungTotal().total;
   if (jumlah === 'pas') {
@@ -561,6 +572,7 @@ function simpanTransaksi(printLangsung = false) {
     id: Date.now(),
     waktu: new Date().toISOString(),
     waktuDisplay: new Date().toLocaleString('id-ID'),
+    tanggal: new Date().toLocaleDateString('id-ID'),
     items: JSON.parse(JSON.stringify(cart)),
     subtotal, pajak, total, bayar,
     kembali: bayar - total,
@@ -594,7 +606,8 @@ function tambahMenu() {
   if (!nama ||!harga || harga <= 0) return alert('Lengkapi nama & harga menu!');
   DB.menu.push({id: Date.now(), nama, harga, kategori});
   saveDB();
-  document.getElementById('namaMenu').value = '';
+  document
+  .getElementById('namaMenu').value = '';
   document.getElementById('hargaMenu').value = '';
   renderMenu();
   renderTabelMenu();
@@ -663,23 +676,61 @@ function renderLaporan() {
   const omzet = trxHariIni.reduce((sum, t) => sum + t.total, 0);
   document.getElementById('omzetHariIni').innerText = formatRp(omzet);
   document.getElementById('totalTrx').innerText = trxHariIni.length;
-  const tbody = document.getElementById('tabelLaporan');
-  tbody.innerHTML = '';
-  if (trxHariIni.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#7f8c8d;">Belum ada transaksi hari ini</td></tr>';
+
+  // Grup per tanggal buat fitur hapus per tanggal
+  const perTanggal = {};
+  DB.transaksi.forEach(t => {
+    const tgl = new Date(t.waktu).toDateString();
+    if (!perTanggal[tgl]) perTanggal[tgl] = [];
+    perTanggal[tgl].push(t);
+  });
+
+  const container = document.getElementById('laporanPerTanggal');
+  container.innerHTML = '';
+
+  if (Object.keys(perTanggal).length === 0) {
+    container.innerHTML = '<p style="text-align:center;color:#7f8c8d;">Belum ada transaksi</p>';
   } else {
-    trxHariIni.slice().reverse().forEach(t => {
-      tbody.innerHTML += `
-        <tr>
-          <td>${t.waktuDisplay}</td>
-          <td>${t.items.map(i => `${i.nama} x${i.qty}`).join(', ')}</td>
-          <td>${formatRp(t.total)}</td>
-          <td>${formatRp(t.bayar)}</td>
-          <td>${formatRp(t.kembali)}</td>
-          <td>${t.kasir}</td>
-        </tr>`;
+    Object.keys(perTanggal).sort().reverse().forEach(tgl => {
+      const trxList = perTanggal[tgl];
+      const totalHari = trxList.reduce((sum, t) => sum + t.total, 0);
+      const isHariIni = tgl === hariIni;
+
+      let html = `
+        <div class="laporan-tanggal">
+          <div class="laporan-tanggal-header">
+            <div>
+              <strong>${formatTanggal(tgl)}</strong> - ${trxList.length} transaksi - ${formatRp(totalHari)}
+            </div>
+            ${currentRole === 'admin'? `<button class="danger btn-hapus-tanggal" onclick="hapusLaporanTanggal('${tgl}')">🗑️ Hapus</button>` : ''}
+          </div>
+          <table style="margin-top:8px;">
+            <thead><tr><th>Waktu</th><th>Items</th><th>Total</th><th>Kasir</th></tr></thead>
+            <tbody>`;
+
+      trxList.slice().reverse().forEach(t => {
+        html += `
+          <tr>
+            <td>${t.waktuDisplay.split(', ')[1]}</td>
+            <td>${t.items.map(i => `${i.nama} x${i.qty}`).join(', ')}</td>
+            <td>${formatRp(t.total)}</td>
+            <td>${t.kasir}</td>
+          </tr>`;
+      });
+
+      html += `</tbody></table></div>`;
+      container.innerHTML += html;
     });
   }
+}
+
+function hapusLaporanTanggal(tgl) {
+  if (!confirm(`Hapus SEMUA transaksi tanggal ${formatTanggal(tgl)}?\nTidak bisa dibatalkan!`)) return;
+  DB.transaksi = DB.transaksi.filter(t => new Date(t.waktu).toDateString()!== tgl);
+  saveDB();
+  renderLaporan();
+  renderLaporanBulanan();
+  alert('Laporan tanggal tersebut berhasil dihapus!');
 }
 
 function renderLaporanBulanan() {
@@ -821,6 +872,7 @@ function exportCSV() {
     const items = t.items.map(i => `${i.nama} x${i.qty}`).join('; ');
     csv += `"${formatTanggal(t.waktu)}","${t.waktuDisplay}","${t.kasir}","${items}",${t.subtotal},${t.pajak},${t.total},${t.bayar},${t.kembali}\n`;
   });
+    });
   const blob = new Blob([csv], { type: 'text/csv' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
@@ -871,6 +923,7 @@ function simpanPengaturan() {
     loadDB();
     alert('Pengaturan berhasil disimpan!');
     document.getElementById('pajakPersen').innerText = DB.setting.pajak;
+    document.getElementById('headerNamaWarung').innerText = DB.setting.namaToko;
   });
 }
 
@@ -972,7 +1025,7 @@ function showPrinterStatus(msg, type) {
 }
 
 async function printStruk(trx) {
-  if (!printerCharacteristic) return alert('Hubungkan printer dulu!');
+  if (!printerCharacteristic) return alert('Hubungkan printer dulu di Pengaturan!');
   const ESC = '\x1B';
   const GS = '\x1D';
   const INIT = ESC + '@';
