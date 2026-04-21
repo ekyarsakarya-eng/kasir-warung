@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kasir Warung Makan Pro</title>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+body { background: #f5f5f5; color: #333; }
+.container { max-width: 1200px; margin: 0 auto; padding: 16px; }
+.hidden { display: none!important; }
+.login-box { max-width: 400px; margin: 80px auto; background: white; padding: 32px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+h1, h2, h3 { margin-bottom: 16px; color: #2c3e50; }
+input, select, button { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 8px; font-size: 16px; }
+button { background: #27ae60; color: white; border: none; cursor: pointer; font-weight: 600; }
+button:hover { background: #219a52; }
+button.danger { background: #e74c3c; }
+button.danger:hover { background: #c0392b; }
+button.secondary { background: #3498db; }
+button.secondary:hover { background: #2980b9; }
+button.warning { background: #f39c12; }
+button.warning:hover { background: #e67e22; }
+button.purple { background: #8e44ad; }
+button.purple:hover { background: #7d3c98; }
+.header { background: #2c3e50; color: white; padding: 16px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-radius: 8px; }
+.grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+@media (max-width: 768px) {.grid { grid-template-columns: 1fr; } }
+.card { background: white; padding: 16px; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.08); margin-bottom: 16px; }
+.menu-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; border-bottom: 1px solid #eee; }
+.menu-item:last-child { border-bottom: none; }
+.badge { background: #3498db; color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px; }
+.badge.minuman { background: #9b59b6; }
+.cart-item { display: flex; justify-content: space-between; padding: 8px 0; }
+.total-box { background: #ecf0f1; padding: 16px; border-radius: 8px; margin: 16px 0; }
+.total-row { display: flex; justify-content: space-between; margin: 8px 0; font-size: 18px; }
+.total-row.grand { font-weight: bold; font-size: 22px; color: #27ae60; }
+table { width: 100%; border-collapse: collapse; margin-top: 12px; }
+th, td { padding: 10px; text-align: left; border-bottom: 1px solid #eee; }
+th { background: #34495e; color: white; }
+.flex { display: flex; gap: 8px; }
+.flex > * { flex: 1; }
+.status { padding: 8px; border-radius: 6px; text-align: center; margin: 8px 0; font-weight: 600; }
+.status.ok { background: #d5f4e6; color: #27ae60; }
+.status.err { background: #fadbd8; color: #e74c3c; }
+.tabs { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+.tab { padding: 10px 16px; background: #bdc3c7; border-radius: 8px 8px 0 0; cursor: pointer; }
+.tab.active { background: white; font-weight: 600; }
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin: 16px 0; }
+.stat-box { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 8px; }
+.stat-box h4 { font-size: 14px; opacity: 0.9; margin-bottom: 8px; }
+.stat-box.value { font-size: 28px; font-weight: bold; }
+</style>
+</head>
+<body>
+
+<!-- LOGIN PAGE -->
+<div id="loginPage" class="container">
+  <div class="login-box">
+    <h1>Kasir Warung Makan</h1>
+    <input type="text" id="username" placeholder="Username" autocomplete="username">
+    <input type="password" id="password" placeholder="Password" autocomplete="current-password">
+    <button onclick="login()">Masuk</button>
+    <p style="margin-top:16px; font-size:14px; color:#7f8c8d;">Admin: admin/admin123 | Kasir: kasir/kasir123</p>
+  </div>
+</div>
+
+<!-- MAIN APP -->
+<div id="appPage" class="container hidden">
+  <div class="header">
+    <div>
+      <h2 id="roleTitle">Kasir Warung</h2>
+      <small id="userInfo"></small>
+    </div>
+    <button class="danger" onclick="logout()" style="width:auto;">Keluar</button>
+  </div>
+
+  <!-- ADMIN TABS -->
+  <div id="adminTabs" class="tabs hidden">
+    <div class="tab active" onclick="showTab('penjualan')">Penjualan</div>
+    <div class="tab" onclick="showTab('menu')">Kelola Menu</div>
+    <div class="tab" onclick="showTab('laporan')">Laporan Harian</div>
+    <div class="tab" onclick="showTab('bulanan')">Laporan Bulanan</div>
+    <div class="tab" onclick="showTab('pengaturan')">Pengaturan</div>
+  </div>
+
+  <!-- HALAMAN PENJUALAN -->
+  <div id="penjualanTab" class="grid">
+    <div class="card">
+      <h3>Daftar Menu</h3>
+      <input type="text" id="searchMenu" placeholder="Cari menu..." oninput="renderMenu()">
+      <div id="menuList"></div>
+    </div>
+
+    <div class="card">
+      <h3>Keranjang</h3>
+      <div id="cartList"></div>
+      <div class="total-box">
+        <div class="total-row"><span>Subtotal:</span><span id="subtotal">Rp 0</span></div>
+        <div class="total-row"><span>Pajak <span id="pajakPersen">0</span>%:</span><span id="pajak">Rp 0</span></div>
+        <div class="total-row grand"><span>Total:</span><span id="total">Rp 0</span></div>
+        <input type="number" id="bayar" placeholder="Uang Bayar" oninput="hitungKembali()">
+        <div class="total-row"><span>Kembali:</span><span id="kembali">Rp 0</span></div>
+      </div>
+      <div class="flex">
+        <button class="warning" onclick="connectPrinter()">Hubungkan Printer</button>
+        <button class="secondary" onclick="simpanTransaksi()">Simpan</button>
+      </div>
+      <button onclick="simpanDanPrint()">Simpan & Print Struk</button>
+      <div id="printerStatus" class="status hidden"></div>
+    </div>
+  </div>
+
+  <!-- HALAMAN KELOLA MENU -->
+  <div id="menuTab" class="card hidden">
+    <h3>Tambah Menu Baru</h3>
+    <div class="flex">
+      <input type="text" id="namaMenu" placeholder="Nama Menu">
+      <input type="number" id="hargaMenu" placeholder="Harga">
+    </div>
+    <div class="flex">
+      <select id="kategoriMenu">
+        <option value="Makanan">Makanan</option>
+        <option value="Minuman">Minuman</option>
+      </select>
+      <button onclick="tambahMenu()">Tambah Menu</button>
+    </div>
+
+    <h3 style="margin-top:24px;">Daftar Semua Menu</h3>
+    <table>
+      <thead><tr><th>Nama</th><th>Kategori</th><th>Harga</th><th>Aksi</th></tr></thead>
+      <tbody id="tabelMenu"></tbody>
+    </table>
+  </div>
+
+  <!-- HALAMAN LAPORAN HARIAN -->
+  <div id="laporanTab" class="card hidden">
+    <h3>Laporan Penjualan Hari Ini</h3>
+    <div class="stats">
+      <div class="stat-box">
+        <h4>Total Omzet</h4>
+        <div class="value" id="omzetHariIni">Rp 0</div>
+      </div>
+      <div class="stat-box" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+        <h4>Total Transaksi</h4>
+        <div class="value" id="totalTrx">0</div>
+      </div>
+    </div>
+    <table>
+      <thead><tr><th>Waktu</th><th>Items</th><th>Total</th><th>Kasir</th></tr></thead>
+      <tbody id="tabelLaporan"></tbody>
+    </table>
+    <div class="flex" style="margin-top:16px;">
+      <button class="purple" onclick="exportLaporanHarian()">Export Excel Hari Ini</button>
+      <button class="danger" onclick="resetLaporan()">Hapus Semua Laporan</button>
+    </div>
+  </div>
+
+  <!-- HALAMAN LAPORAN BULAN - BARU -->
+  <div id="bulananTab" class="card hidden">
+    <h3>Laporan Bulanan</h3>
+    <div class="flex">
+      <select id="bulanFilter">
+        <option value="0">Januari</option>
+        <option value="1">Februari</option>
+        <option value="2">Maret</option>
+        <option value="3">April</option>
+        <option value="4">Mei</option>
+        <option value="5">Juni</option>
+        <option value="6">Juli</option>
+        <option value="7">Agustus</option>
+        <option value="8">September</option>
+        <option value="9">Oktober</option>
+        <option value="10">November</option>
+        <option value="11">Desember</option>
+      </select>
+      <select id="tahunFilter"></select>
+      <button onclick="renderLaporanBulanan()">Tampilkan</button>
+    </div>
+
+    <div class="stats">
+      <div class="stat-box">
+        <h4>Omzet Bulan Ini</h4>
+        <div class="value" id="omzetBulan">Rp 0</div>
+      </div>
+      <div class="stat-box" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);">
+        <h4>Total Transaksi</h4>
+        <div class="value" id="trxBulan">0</div>
+      </div>
+      <div class="stat-box" style="background: linear-gradient(135deg, #30cfd0 0%, #330867 100%);">
+        <h4>Rata-rata/Hari</h4>
+        <div class="value" id="rataHari">Rp 0</div>
+      </div>
+    </div>
+
+    <h3 style="margin-top:24px;">Rekap Per Hari</h3>
+    <table>
+      <thead><tr><th>Tanggal</th><th>Jumlah Transaksi</th><th>Total Omzet</th></tr></thead>
+      <tbody id="tabelBulanan"></tbody>
+    </table>
+
+    <h3 style="margin-top:24px;">Menu Terlaris Bulan Ini</h3>
+    <table>
+      <thead><tr><th>Nama Menu</th><th>Terjual</th><th>Total Pendapatan</th></tr></thead>
+      <tbody id="tabelMenuTerlaris"></tbody>
+    </table>
+
+    <div class="flex" style="margin-top:16px;">
+      <button class="purple" onclick="exportLaporanBulanan()">Export Excel Bulanan</button>
+      <button class="secondary" onclick="exportCSV()">Export CSV</button>
+    </div>
+  </div>
+
+  <!-- HALAMAN PENGATURAN -->
+  <div id="pengaturanTab" class="card hidden">
+    <h3>Pengaturan Toko</h3>
+    <input type="text" id="namaToko" placeholder="Nama Warung">
+    <input type="text" id="alamatToko" placeholder="Alamat">
+    <input type="number" id="pajakSetting" placeholder="Pajak %" min="0" max="100">
+    <button onclick="simpanPengaturan()">Simpan Pengaturan</button>
+
+    <h3 style="margin-top:24px;">Ubah Password</h3>
+    <input type="password" id="passLama" placeholder="Password Lama">
+    <input type="password" id="passBaru" placeholder="Password Baru">
+    <button onclick="ubahPassword()">Ubah Password Admin</button>
+  </div>
+</div>
+
+<script>
+// === DATABASE LOCALSTORAGE ===
+let DB = {
+  users: { admin: 'admin123', kasir: 'kasir123' },
+  menu: [
+    {id: 1, nama: 'Nasi Goreng', harga: 15000, kategori: 'Makanan'},
+    {id: 2, nama: 'Mie Ayam', harga: 12000, kategori: 'Makanan'},
+    {id: 3, nama: 'Es Teh Manis', harga: 4000, kategori: 'Minuman'},
+    {id: 4, nama: 'Es Jeruk', harga: 5000, kategori: 'Minuman'}
+  ],
+  transaksi: [],
+  setting: { namaToko: 'Warung Makan Barokah', alamat: 'Jl. Contoh No.123', pajak: 0 }
+};
+
+let currentUser = null;
+let currentRole = null;
+let cart = [];
+let printerDevice = null;
+let printerCharacteristic = null;
+
+// === INIT ===
+function loadDB() {
+  const saved = localStorage.getItem('kasirWarungDB');
+  if (saved) DB = JSON.parse(saved);
+  document.getElementById('namaToko').value = DB.setting.namaToko;
+  document.getElementById('alamatToko').value = DB.setting.alamat;
+  document.getElementById('pajakSetting').value = DB.setting.pajak;
+  document.getElementById('pajakPersen').innerText = DB.setting.pajak;
+  initTahunFilter();
+}
+
+function initTahunFilter() {
+  const tahunSelect = document.getElementById('tahunFilter');
+  const currentYear = new Date().getFullYear();
+  tahunSelect.innerHTML = '';
+  for (let i = currentYear - 2; i <= currentYear + 1; i++) {
+    tahunSelect.innerHTML += `<option value="${i}" ${i === currentYear? 'selected' : ''}>${i}</option>`;
+  }
+  document.getElementById('bulanFilter').value = new Date().getMonth();
+}
+
+function saveDB() {
+  localStorage.setItem('kasirWarungDB', JSON.stringify(DB));
+}
+
+function formatRp(angka) {
+  return 'Rp ' + Math.round(angka).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+}
+
+function formatTanggal(dateStr) {
+  const d = new Date(dateStr);
+  return d.toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' });
+}
+
+// === LOGIN ===
+function login() {
+  const u = document.getElementById('username').value;
+  const p = document.getElementById('password').value;
+  if (DB.users[u] === p) {
+    currentUser = u;
+    currentRole = u === 'admin'? 'admin' : 'kasir';
+    document.getElementById('loginPage').classList.add('hidden');
+    document.getElementById('appPage').classList.remove('hidden');
+    document.getElementById('userInfo').innerText = `Login sebagai: ${u}`;
+    document.getElementById('roleTitle').innerText = currentRole === 'admin'? 'Dashboard Admin' : 'Kasir Penjualan';
+    if (currentRole === 'admin') document.getElementById('adminTabs').classList.remove('hidden');
+    loadDB();
+    renderMenu();
+    renderCart();
+    renderTabelMenu();
+    renderLaporan();
+    renderLaporanBulanan();
+  } else {
+    alert('Username atau password salah!');
+  }
+}
+
+function logout() {
+  currentUser = null;
+  currentRole = null;
+  cart = [];
+  document.getElementById('loginPage').classList.remove('hidden');
+  document.getElementById('appPage').classList.add('hidden');
+}
+
+// === TAB ADMIN ===
+function showTab(tab) {
+  ['penjualan', 'menu', 'laporan', 'bulanan', 'pengaturan'].forEach(t => {
+    document.getElementById(t + 'Tab').classList.add('hidden');
+  });
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById(tab + 'Tab').classList.remove('hidden');
+  event.target.classList.add('active');
+}
+
+// === MENU ===
+function renderMenu() {
+  const search = document.getElementById('searchMenu').value.toLowerCase();
+  const list = document.getElementById('menuList');
+  list.innerHTML = '';
+  DB.menu.filter(m => m.nama.toLowerCase().includes(search)).forEach(m => {
+    list.innerHTML += `
+      <div class="menu-item">
+        <div>
+          <strong>${m.nama}</strong><br>
+          <span class="badge ${m.kategori === 'Minuman'? 'minuman' : ''}">${m.kategori}</span>
+          <span>${formatRp(m.harga)}</span>
+        </div>
+        <button style="width:auto;padding:8px 16px;" onclick="addToCart(${m.id})">+</button>
+      </div>`;
+  });
+}
+
+function addToCart(id) {
+  const item = DB.menu.find(m => m.id === id);
+  const existing = cart.find(c => c.id === id);
+  if (existing) existing.qty++;
+  else cart.push({...item, qty: 1});
+  renderCart();
+}
+
+function renderCart() {
+  const list = document.getElementById('cartList');
+  list.innerHTML = '';
+  cart.forEach((c, i) => {
+    list.innerHTML += `
+      <div class="cart-item">
+        <span>${c.nama} x${c.qty}</span>
+        <div>
+          <span>${formatRp(c.harga * c.qty)}</span>
+          <button style="width:auto;padding:2px 8px;margin-left:8px;" onclick="removeFromCart(${i})">x</button>
+        </div>
+      </div>`;
+  });
+  hitungTotal();
+}
+
+function removeFromCart(index) {
+  cart.splice(index, 1);
+  renderCart();
+}
+
+function hitungTotal() {
+  const subtotal = cart.reduce((sum, c) => sum + c.harga * c.qty, 0);
+  const pajak = Math.round(subtotal * DB.setting.pajak / 100);
+  const total = subtotal + pajak;
+  document.getElementById('subtotal').innerText = formatRp(subtotal);
+  document.getElementById('pajak').innerText = formatRp(pajak);
+  document.getElementById('total').innerText = formatRp(total);
+  hitungKembali();
+  return {subtotal, pajak, total};
+}
+
+function hitungKembali() {
+  const total = hitungTotal().total;
+  const bayar = parseInt(document.getElementById('bayar').value) || 0;
+  const kembali = bayar - total;
+  document.getElementById('kembali').innerText = formatRp(kembali > 0? kembali : 0);
+}
+
+// === TRANSAKSI ===
+function simpanTransaksi(print = false) {
+  if (cart.length === 0) return alert('Keranjang kosong!');
+  const {subtotal, pajak, total} = hitungTotal();
+  const bayar = parseInt(document.getElementById('bayar').value) || 0;
+  if (bayar < total) return alert('Uang bayar kurang!');
+
+  const trx = {
+    id: Date.now(),
+    waktu: new Date().toISOString(),
+    waktuDisplay: new Date().toLocaleString('id-ID'),
+    items: [...cart],
+    subtotal, pajak, total, bayar,
+    kembali: bayar - total,
+    kasir: currentUser
+  };
+  DB.transaksi.push(trx);
+  saveDB();
+
+  if (print) printStruk(trx);
+
+  cart = [];
+  document.getElementById('bayar').value = '';
+  renderCart();
+  renderLaporan();
+  renderLaporanBulanan();
+  alert('Transaksi berhasil disimpan!');
+}
+
+function simpanDanPrint() {
+  simpanTransaksi(true);
+}
+
+// === KELOLA MENU ===
+function tambahMenu() {
+  const nama = document.getElementById('namaMenu').value;
+  const harga = parseInt(document.getElementById('hargaMenu').value);
+  const kategori = document.getElementById('kategoriMenu').value;
+  if (!nama ||!harga) return alert('Lengkapi data menu!');
+
+  DB.menu.push({id: Date.now(), nama, harga, kategori});
+  saveDB();
+  document.getElementById('namaMenu').value = '';
+  document.getElementById('hargaMenu').value = '';
+  renderMenu();
+  renderTabelMenu();
+}
+
+function renderTabelMenu() {
+  const tbody = document.getElementById('tabelMenu');
+  tbody.innerHTML = '';
+  DB.menu.forEach(m => {
+    tbody.innerHTML += `
+      <tr>
+        <td>${m.nama}</td>
+        <td><span class="badge ${m.kategori === 'Minuman'? 'minuman' : ''}">${m.kategori}</span></td>
+        <td>${formatRp(m.harga)}</td>
+        <td><button class="danger" style="width:auto;padding:6px 12px;" onclick="hapusMenu(${m.id})">Hapus</button></td>
+      </tr>`;
+  });
+}
+
+function hapusMenu(id) {
+  if (confirm('Hapus menu ini?')) {
+    DB.menu = DB.menu.filter(m => m.id!== id);
+    saveDB();
+    renderMenu();
+    renderTabelMenu();
+  }
+}
+
+// === LAPORAN HARIAN ===
+function renderLaporan() {
+  const hariIni = new Date().toDateString();
+  const trxHariIni = DB.transaksi.filter(t => new Date(t.waktu).toDateString() === hariIni);
+  const omzet = trxHariIni.reduce((sum, t) => sum + t.total, 0);
+
+  document.getElementById('omzetHariIni').innerText = formatRp(omzet);
+  document.getElementById('totalTrx').innerText = trxHariIni.length;
+
+  const tbody = document.getElementById('tabelLaporan');
+  tbody.innerHTML = '';
+  trxHariIni.reverse().forEach(t => {
+    tbody.innerHTML += `
+      <tr>
+        <td>${t.waktuDisplay}</td>
+        <td>${t.items.map(i => `${i.nama} x${i.qty}`).join(', ')}</td>
+        <td>${formatRp(t.total)}</td>
+        <td>${t.kasir}</td>
+      </tr>`;
+  });
+}
+
+function resetLaporan() {
+  if (confirm('Hapus SEMUA data transaksi? Tidak bisa dibatalkan!')) {
+    DB.transaksi = [];
+    saveDB();
+    renderLaporan();
+    renderLaporanBulanan();
+  }
+}
+
+// === LAPORAN BULAN - FITUR BARU ===
+function renderLaporanBulanan() {
+  const bulan = parseInt(document.getElementById('bulanFilter').value);
+  const tahun = parseInt(document.getElementById('tahunFilter').value);
+
+  const trxBulan = DB.transaksi.filter(t => {
+    const d = new Date(t.waktu);
+    return d.getMonth() === bulan && d.getFullYear() === tahun;
+  });
+
+  const omzet = trxBulan.reduce((sum, t) => sum + t.total, 0);
+  const hariUnik = [...new Set(trxBulan.map(t => new Date(t.waktu).toDateString()))].length;
+  const rataHari = hariUnik > 0? omzet / hariUnik : 0;
+
+  document.getElementById('omzetBulan').innerText = formatRp(omzet);
+  document.getElementById('trxBulan').innerText = trxBulan.length;
+  document.getElementById('rataHari').innerText = formatRp(rataHari);
+
+  // Rekap per hari
+  const perHari = {};
+  trxBulan.forEach(t => {
+    const tgl = new Date(t.waktu).toDateString();
+    if (!perHari[tgl]) perHari[tgl] = { count: 0, total: 0 };
+    perHari[tgl].count++;
+    perHari[tgl].total += t.total;
+  });
+
+  const tbodyHari = document.getElementById('tabelBulanan');
+  tbodyHari.innerHTML = '';
+  Object.keys(perHari).sort().reverse().forEach(tgl => {
+    tbodyHari.innerHTML += `
+      <tr>
+        <td>${formatTanggal(tgl)}</td>
+        <td>${perHari[tgl].count}</td>
+        <td>${formatRp(perHari[tgl].total)}</td>
+      </tr>`;
+  });
+
+  // Menu terlaris
+  const menuStats = {};
+  trxBulan.forEach(t => {
+    t.items.forEach(i => {
+      if (!menuStats[i.nama]) menuStats[i.nama] = { qty: 0, total: 0 };
+      menuStats[i.nama].qty += i.qty;
+      menuStats[i.nama].total += i.harga * i.qty;
+    });
+  });
+
+  const tbodyMenu = document.getElementById('tabelMenuTerlaris');
+  tbodyMenu.innerHTML = '';
+  Object.keys(menuStats)
+   .sort((a, b) => menuStats[b].qty - menuStats[a].qty)
+   .forEach(nama => {
+      tbodyMenu.innerHTML += `
+        <tr>
+          <td>${nama}</td>
+          <td>${menuStats[nama].qty}</td>
+          <td>${formatRp(menuStats[nama].total)}</td>
+        </tr>`;
+    });
+}
+
+// === EXPORT EXCEL ===
+function exportLaporanHarian() {
+  const hariIni = new Date().toDateString();
+  const trxHariIni = DB.transaksi.filter(t => new Date(t.waktu).toDateString() === hariIni);
+
+  const data = trxHariIni.map(t => ({
+    'Waktu': t.waktuDisplay,
+    'Kasir': t.kasir,
+    'Items': t.items.map(i => `${i.nama} x${i.qty}`).join(', '),
+    'Subtotal': t.subtotal,
+    'Pajak': t.pajak,
+    'Total': t.total,
+    'Bayar': t.bayar,
+    'Kembali': t.kembali
+  }));
+
+  const ws = XLSX.utils.json_to_sheet(data);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Laporan Harian');
+  XLSX.writeFile(wb, `Laporan_${DB.setting.namaToko}_${new Date().toLocaleDateString('id-ID')}.xlsx`);
+}
+
+function exportLaporanBulanan() {
+  const bulan = parseInt(document.getElementById('bulanFilter').value);
+  const tahun = parseInt(document.getElementById('tahunFilter').value);
+  const namaBulan = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'][bulan];
+
+  const trxBulan = DB.transaksi.filter(t => {
+    const d = new Date(t.waktu);
+    return d.getMonth() === bulan && d.getFullYear() === tahun;
+  });
+
+  // Sheet 1: Detail Transaksi
+  const dataDetail = trxBulan.map(t => ({
+    'Tanggal': formatTanggal(t.waktu),
+    'Waktu': t.waktuDisplay,
+    'Kasir': t.kasir,
+    'Items': t.items.map(i => `${i.nama} x${i.qty}`).join(', '),
+    'Subtotal': t.subtotal,
+    'Pajak': t.pajak,
+    'Total': t.total
+  }));
+
+  // Sheet 2: Rekap Harian
+  const perHari = {};
+  trxBulan.forEach(t => {
+    const tgl = formatTanggal(t.waktu);
+    if (!perHari[tgl]) perHari[tgl] = { count: 0, total: 0 };
+    perHari[tgl].count++;
+    perHari[tgl].total += t.total;
+  });
+  const dataHarian = Object.keys(perHari).map(tgl => ({
+    'Tanggal': tgl,
+    'Jumlah Transaksi': perHari[tgl].count,
+    'Total Omzet': perHari[tgl].total
+  }));
+
+  // Sheet 3: Menu Terlaris
+  const menuStats = {};
+  trxBulan.forEach(t => {
+    t.items.forEach(i => {
+      if (!menuStats[i.nama]) menuStats[i.nama] = { qty: 0, total: 0 };
+      menuStats[i.nama].qty += i.qty;
+      menuStats[i.nama].total += i.harga * i.qty;
+    });
+  });
+  const dataMenu = Object.keys(menuStats).map(nama => ({
+    'Nama Menu': nama,
+    'Terjual': menuStats[nama].qty,
+    'Total Pendapatan': menuStats[nama].total
+  })).sort((a, b) => b.Terjual - a.Terjual);
+
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(dataDetail), 'Detail Transaksi');
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(dataHarian), 'Rekap Harian');
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(dataMenu), 'Menu Terlaris');
+  XLSX.writeFile(wb, `Laporan_Bulanan_${namaBulan}_${tahun}.xlsx`);
+}
+
+function exportCSV() {
+  const bulan = parseInt(document.getElementById('bulanFilter').value);
+  const tahun = parseInt(document.getElementById('tahunFilter').value);
+  const trxBulan = DB.transaksi.filter(t => {
+    const d = new Date(t.waktu);
+    return d.getMonth() === bulan && d.getFullYear() === tahun;
+  });
+
+  let csv = 'Tanggal,Waktu,Kasir,Items,Subtotal,Pajak,Total\n';
+  trxBulan.forEach(t => {
+    const items = t.items.map(i => `${i.nama} x${i.qty}`).join('; ');
+    csv += `"${formatTanggal(t.waktu)}","${t.waktuDisplay}","${t.kasir}","${items}",${t.subtotal},${t.pajak},${t.total}\n`;
+  });
+
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `Laporan_${bulan+1}_${tahun}.csv`;
+  a.click();
+}
+
+// === PENGATURAN ===
+function simpanPengaturan() {
+  DB.setting.namaToko = document.getElementById('namaToko').value;
+  DB.setting.alamat = document.getElementById('alamatToko').value;
+  DB.setting.pajak = parseInt(document.getElementById('pajakSetting').value) || 0;
+  document.getElementById('pajakPersen').innerText = DB.setting.pajak;
+  saveDB();
+  alert('Pengaturan disimpan!');
+}
+
+function ubahPassword() {
+  const lama = document.getElementById('passLama').value;
+  const baru = document.getElementById('passBaru').value;
+  if (DB.users.admin!== lama) return alert('Password lama salah!');
+  if (!baru) return alert('Password baru tidak boleh kosong!');
+  DB.users.admin = baru;
+  saveDB();
+  document.getElementById('passLama').value = '';
+  document.getElementById('passBaru').value = '';
+  alert('Password admin berhasil diubah!');
+}
+
+// === BLUETOOTH PRINTER ===
+async function connectPrinter() {
+  try {
+    showPrinterStatus('Mencari printer...', 'ok');
+    printerDevice = await navigator.bluetooth.requestDevice({
+      filters: [{ services: ['000018f0-0000-1000-8000-00805f9b34fb'] }],
+      optionalServices: ['000018f0-0000-1000-8000-00805f9b34fb', '49535343-fe7d-4ae5-8fa9-9fafd205e455']
+    });
+
+    const server = await printerDevice.gatt.connect();
+    const service = await server.getPrimaryService('000018f0-0000-1000-8000-00805f9b34fb');
+    printerCharacteristic = await service.getCharacteristic('00002af1-0000-1000-8000-00805f9b34fb');
+
+    showPrinterStatus('Printer terhubung: ' + printerDevice.name, 'ok');
+  } catch (err) {
+    showPrinterStatus('Gagal konek: ' + err.message, 'err');
+  }
+}
+
+function showPrinterStatus(msg, type) {
+  const el = document.getElementById('printerStatus');
+  el.innerText = msg;
+  el.className = 'status ' + type;
+  el.classList.remove('hidden');
+}
+
+async function printStruk(trx) {
+  if (!printerCharacteristic) return alert('Hubungkan printer dulu!');
+
+  const ESC = '\x1B';
+  const GS = '\x1D';
+  const INIT = ESC + '@';
+  const CENTER = ESC + 'a' + '\x01';
+  const LEFT = ESC + 'a' + '\x00';
+  const BOLD_ON = ESC + 'E' + '\x01';
+  const BOLD_OFF = ESC + 'E' + '\x00';
+  const CUT = GS + 'V' + '\x00';
+
+  let struk = INIT;
+  struk += CENTER + BOLD_ON;
+  struk += DB.setting.namaToko + '\n';
+  struk += BOLD_OFF;
+  struk += DB.setting.alamat + '\n';
+  struk += '================================\n';
+  struk += LEFT;
+  struk += '================================\n';
+  struk += LEFT;
+  struk += `No: ${trx.id}\n`;
+  struk += `${trx.waktuDisplay}\n`;
+  struk += `Kasir: ${trx.kasir}\n`;
+  struk += '--------------------------------\n';
+
+  trx.items.forEach(i => {
+    struk += `${i.nama}\n`;
+    struk += ` ${i.qty} x ${formatRp(i.harga)} = ${formatRp(i.harga * i.qty)}\n`;
+  });
+
+  struk += '--------------------------------\n';
+  struk += `Subtotal: ${formatRp(trx.subtotal)}\n`;
+  if (trx.pajak > 0) struk += `Pajak ${DB.setting.pajak}%: ${formatRp(trx.pajak)}\n`;
+  struk += BOLD_ON;
+  struk += `TOTAL: ${formatRp(trx.total)}\n`;
+  struk += BOLD_OFF;
+  struk += `Bayar: ${formatRp(trx.bayar)}\n`;
+  struk += `Kembali: ${formatRp(trx.kembali)}\n`;
+  struk += CENTER;
+  struk += '================================\n';
+  struk += 'Terima Kasih!\n\n\n';
+  struk += CUT;
+
+  try {
+    const encoder = new TextEncoder();
+    const data = encoder.encode(struk);
+    for (let i = 0; i < data.length; i += 512) {
+      await printerCharacteristic.writeValue(data.slice(i, i + 512));
+      await new Promise(r => setTimeout(r, 50));
+    }
+    showPrinterStatus('Struk berhasil dicetak!', 'ok');
+  } catch (err) {
+    showPrinterStatus('Gagal print: ' + err.message, 'err');
+  }
+}
+
+// === INIT ===
+loadDB();
+</script>
+</body>
+</html>
