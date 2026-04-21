@@ -526,26 +526,18 @@ function hitungTotal() {
   document.getElementById('pajak').innerText = formatRp(pajak);
   document.getElementById('total').innerText = formatRp(total);
 
+  // Auto-fill uang bayar = total, tapi cuma kalau masih kosong
   const bayarInput = document.getElementById('bayar');
-  if (cart.length > 0 && (!bayarInput.value || parseInt(bayarInput.value) === 0)) {
+  if (cart.length > 0 && bayarInput.value === '') {
     bayarInput.value = total;
   }
-  hitungKembali();
+  
+  // Langsung hitung kembalian tanpa panggil fungsi lain
+  hitungKembaliLangsung(total);
   return {subtotal, pajak, total};
 }
 
-function setBayar(jumlah) {
-  const total = hitungTotal().total;
-  if (jumlah === 'pas') {
-    document.getElementById('bayar').value = total;
-  } else {
-    document.getElementById('bayar').value = jumlah;
-  }
-  hitungKembali();
-}
-
-function hitungKembali() {
-  const total = hitungTotal().total;
+function hitungKembaliLangsung(total) {
   const bayar = parseInt(document.getElementById('bayar').value) || 0;
   const kembali = bayar - total;
   const kembaliEl = document.getElementById('kembali');
@@ -564,6 +556,22 @@ function hitungKembali() {
     document.getElementById('btnSimpan').disabled = cart.length === 0;
     document.getElementById('btnSimpanPrint').disabled = cart.length === 0;
   }
+}
+
+function setBayar(jumlah) {
+  const total = hitungTotal().total;
+  if (jumlah === 'pas') {
+    document.getElementById('bayar').value = total;
+  } else {
+    document.getElementById('bayar').value = jumlah;
+  }
+  hitungKembaliLangsung(total); // Langsung hitung, ga muter-muter
+}
+
+// Fungsi ini buat dipanggil dari oninput="hitungKembali()"
+function hitungKembali() {
+  const total = cart.reduce((sum, c) => sum + c.harga * c.qty, 0) * (100 + DB.setting.pajak) / 100;
+  hitungKembaliLangsung(Math.round(total));
 }
 
 // === TRANSAKSI ===
