@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -11,7 +10,7 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
-body { background: #f5; color: #333; }
+body { background: #f5f5; color: #333; }
 .container { max-width: 1200px; margin: 0 auto; padding: 16px; }
 .hidden { display: none!important; }
 .login-box { max-width: 400px; margin: 80px auto; background: white; padding: 32px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
@@ -29,11 +28,13 @@ button.warning { background: #f39c12; }
 button.warning:hover { background: #e67e22; }
 button.purple { background: #8e44ad; }
 button.purple:hover { background: #7d3c98; }
+button.link { background: none; color: #3498db; text-decoration: underline; padding: 4px; margin-top: 8px; font-size: 14px; }
+button.link:hover { background: #ecf0f1; }
 .header { background: #2c3e50; color: white; padding: 16px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-radius: 8px; }
 .header-left { display: flex; align-items: center; gap: 12px; }
 .warung-logo { width: 48px; height: 48px; border-radius: 8px; object-fit: cover; background: white; }
 .grid { display: grid; grid-template-columns: 1fr; gap: 16px; }
-@media (max-width: 768px) {.grid { grid-template-columns: 1fr; } }
+@media (min-width: 768px) {.grid { grid-template-columns: 1fr 1fr; } }
 .card { background: white; padding: 16px; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.08); margin-bottom: 16px; }
 .menu-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; border-bottom: 1px solid #eee; }
 .menu-item:last-child { border-bottom: none; }
@@ -73,7 +74,7 @@ th { background: #34495e; color: white; }
 </head>
 <body>
 
-<!-- LOGIN PAGE - PASSWORD DIHAPUS -->
+<!-- LOGIN PAGE - ADA TOMBOL LUPA PASSWORD -->
 <div id="loginPage" class="container">
   <div class="login-box">
     <img id="loginBanner" src="" style="width:100%;border-radius:8px;margin-bottom:16px;display:none;">
@@ -81,6 +82,8 @@ th { background: #34495e; color: white; }
     <input type="text" id="username" placeholder="Username" autocomplete="username">
     <input type="password" id="password" placeholder="Password" autocomplete="current-password">
     <button onclick="login()">Masuk</button>
+    <button class="link" onclick="lupaPassword()">Lupa Password?</button>
+    <div id="resetInfo" class="status ok hidden" style="margin-top:12px;"></div>
   </div>
 </div>
 
@@ -231,7 +234,7 @@ th { background: #34495e; color: white; }
     </div>
   </div>
 
-  <!-- HALAMAN PENGATURAN - ADMIN BISA UBAH TULISAN & GAMBAR -->
+  <!-- HALAMAN PENGATURAN -->
   <div id="pengaturanTab" class="card hidden">
     <h3>🎨 Branding Warung</h3>
     <p style="font-size:14px;color:#7f8c8d;margin-bottom:16px;">Perubahan akan langsung muncul di halaman login & header aplikasi</p>
@@ -405,7 +408,7 @@ function previewBanner(event) {
   }
 }
 
-// === LOGIN ===
+// === LOGIN + LUPA PASSWORD ===
 function login() {
   const u = document.getElementById('username').value;
   const p = document.getElementById('password').value;
@@ -423,8 +426,22 @@ function login() {
     renderTabelMenu();
     renderLaporan();
     renderLaporanBulanan();
+    document.getElementById('resetInfo').classList.add('hidden');
   } else {
     alert('Username atau password salah!');
+  }
+}
+
+function lupaPassword() {
+  if (confirm('Reset password ke default?\n\nAdmin: admin123\nKasir: kasir123\nLanjutkan?')) {
+    DB.users.admin = 'admin123';
+    DB.users.kasir = 'kasir123';
+    saveDB();
+    document.getElementById('resetInfo').innerText = '✅ Password direset! Silakan login: admin/admin123 atau kasir/kasir123';
+    document.getElementById('resetInfo').classList.remove('hidden');
+    document.getElementById('username').value = 'admin';
+    document.getElementById('password').value = '';
+    document.getElementById('password').focus();
   }
 }
 
@@ -434,6 +451,7 @@ function logout() {
   cart = [];
   document.getElementById('loginPage').classList.remove('hidden');
   document.getElementById('appPage').classList.add('hidden');
+  document.getElementById('resetInfo').classList.add('hidden');
 }
 
 // === TAB ADMIN ===
@@ -663,8 +681,7 @@ function hapusMenu(id) {
     renderTabelMenu();
   }
 }
-
-// === LAPORAN ===
+// === LAPORAN === Lanjutan
 function renderLaporan() {
   const hariIni = new Date().toDateString();
   const trxHariIni = DB.transaksi.filter(t => new Date(t.waktu).toDateString() === hariIni);
@@ -689,8 +706,10 @@ function renderLaporan() {
           <td>${t.kasir}</td>
         </tr>`;
     });
+  }
+}
 
-    // === LAPORAN BULAN ===
+// === LAPORAN BULAN ===
 function renderLaporanBulanan() {
   const bulan = parseInt(document.getElementById('bulanFilter').value);
   const tahun = parseInt(document.getElementById('tahunFilter').value);
@@ -867,45 +886,45 @@ function resetLaporan() {
   }
 }
 
-// === PENGATURAN - UPDATE DENGAN BRANDING ===
+// === PENGATURAN ===
 function simpanPengaturan() {
   DB.setting.namaToko = document.getElementById('namaToko').value.trim();
   DB.setting.alamat = document.getElementById('alamatToko').value.trim();
   DB.setting.pajak = parseInt(document.getElementById('pajakSetting').value) || 0;
 
-  // Simpan logo
   const logoFile = document.getElementById('inputLogo').files[0];
-  if (logoFile) {
-    const reader = new FileReader();
-    reader.onload = function(e) {
-      DB.setting.logo = e.target.result;
-      saveDB();
-      loadDB();
-      alert('Pengaturan & logo berhasil disimpan!');
-    }
-    reader.readAsDataURL(logoFile);
-  }
-
-  // Simpan banner
   const bannerFile = document.getElementById('inputBanner').files[0];
-  if (bannerFile) {
-    const reader = new FileReader();
-    reader.onload = function(e) {
-      DB.setting.banner = e.target.result;
-      saveDB();
-      loadDB();
-      alert('Pengaturan & banner berhasil disimpan!');
-    }
-    reader.readAsDataURL(bannerFile);
+
+  let promises = [];
+
+  if (logoFile) {
+    promises.push(new Promise(resolve => {
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        DB.setting.logo = e.target.result;
+        resolve();
+      }
+      reader.readAsDataURL(logoFile);
+    }));
   }
 
-  if (!logoFile &&!bannerFile) {
+  if (bannerFile) {
+    promises.push(new Promise(resolve => {
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        DB.setting.banner = e.target.result;
+        resolve();
+      }
+      reader.readAsDataURL(bannerFile);
+    }));
+  }
+
+  Promise.all(promises).then(() => {
     saveDB();
     loadDB();
     alert('Pengaturan berhasil disimpan!');
-  }
-
-  document.getElementById('pajakPersen').innerText = DB.setting.pajak;
+    document.getElementById('pajakPersen').innerText = DB.setting.pajak;
+  });
 }
 
 function downloadManifest() {
