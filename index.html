@@ -170,10 +170,10 @@ th { background: #34495e; color: white; }
       <thead><tr><th>Waktu</th><th>Items</th><th>Total</th><th>Bayar</th><th>Kembali</th><th>Kasir</th></tr></thead>
       <tbody id="tabelLaporan"></tbody>
     </table>
-    <div class="flex" style="margin-top:16px;">
-      <button class="purple" onclick="exportLaporanHarian()">📊 Export Excel Hari Ini</button>
-      <button class="danger" onclick="resetLaporan()">🗑️ Hapus Semua Laporan</button>
-    </div>
+    <div class="flex admin-only" style="margin-top:16px;">
+  <button class="purple" onclick="exportLaporanHarian()">📊 Export Excel Hari Ini</button>
+  <button class="danger" onclick="resetLaporan()">🗑️ Hapus Semua Laporan</button>
+</div>
   </div>
   <div id="bulananTab" class="card hidden">
     <h3>Laporan Bulanan</h3>
@@ -376,8 +376,8 @@ function login() {
     document.getElementById('userInfo').innerText = `Login sebagai: ${u}`;
     document.getElementById('roleTitle').innerText = currentRole === 'admin'? 'Dashboard Admin' : 'Kasir Penjualan';
     document.getElementById('adminTabs').classList.remove('hidden');
+document.getElementById('adminTabs').classList.remove('hidden');
 if (currentRole === 'kasir') {
-  // Sembunyiin menu yang cuma buat admin
   document.querySelectorAll('.admin-only').forEach(el => el.classList.add('hidden'));
 }
     loadDB();
