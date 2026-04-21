@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -266,6 +265,7 @@ th { background: #34495e; color: white; }
     </div>
   </div>
 </div>
+<script>
 let DB = {
   users: { admin: 'admin123', kasir: 'kasir123' },
   menu: [
@@ -425,7 +425,7 @@ function renderMenu() {
   list.innerHTML = '';
   DB.menu.filter(m => m.nama.toLowerCase().includes(search)).forEach(m => {
     const cartItem = cart.find(c => c.id === m.id);
-    const qty = cartItem ? cartItem.qty : 0;
+    const qty = cartItem? cartItem.qty : 0;
     
     list.innerHTML += `
       <div class="menu-item">
@@ -435,7 +435,7 @@ function renderMenu() {
           <span>${formatRp(m.harga)}</span>
         </div>
         <div class="qty-control">
-          ${qty > 0 ? `<button class="qty-btn danger" onclick="kurangiDariMenu(${m.id})">-</button>
+          ${qty > 0? `<button class="qty-btn danger" onclick="kurangiDariMenu(${m.id})">-</button>
           <span style="min-width:30px;text-align:center;font-weight:bold;">${qty}</span>` : ''}
           <button class="qty-btn" onclick="tambahDariMenu(${m.id})">+</button>
         </div>
@@ -457,7 +457,7 @@ function kurangiDariMenu(id) {
   if (existing) {
     existing.qty--;
     if (existing.qty <= 0) {
-      cart = cart.filter(c => c.id !== id);
+      cart = cart.filter(c => c.id!== id);
     }
     renderCart();
     renderMenu();
@@ -473,12 +473,13 @@ function renderCart() {
     cart.forEach((c, i) => {
       list.innerHTML += `
         <div class="cart-item">
-          <span>${c.nama}</span>
+          <span class="cart-item-name">${c.nama}</span>
           <div class="qty-control">
             <button class="qty-btn danger" onclick="ubahQty(${i}, -1)">-</button>
             <span style="min-width:30px;text-align:center;">${c.qty}</span>
             <button class="qty-btn" onclick="ubahQty(${i}, 1)">+</button>
             <span style="margin-left:8px;">${formatRp(c.harga * c.qty)}</span>
+            <button class="danger btn-hapus-item" onclick="hapusItemCart(${i})">🗑️</button>
           </div>
         </div>`;
     });
@@ -490,6 +491,13 @@ function ubahQty(index, delta) {
   cart[index].qty += delta;
   if (cart[index].qty <= 0) cart.splice(index, 1);
   renderCart();
+  renderMenu();
+}
+
+function hapusItemCart(index) {
+  cart.splice(index, 1);
+  renderCart();
+  renderMenu();
 }
 
 function hitungTotal() {
@@ -525,7 +533,6 @@ function hitungKembaliLangsung(total) {
     document.getElementById('btnSimpanPrint').disabled = cart.length === 0;
   }
 }
-
 function setBayar(jumlah) {
   const total = hitungTotal().total;
   if (jumlah === 'pas') {
@@ -567,6 +574,7 @@ function simpanTransaksi(printLangsung = false) {
   cart = [];
   document.getElementById('bayar').value = '';
   renderCart();
+  renderMenu();
   alert(`Transaksi berhasil!\nTotal: ${formatRp(total)}\nKembali: ${formatRp(trx.kembali)}`);
 }
 
@@ -623,7 +631,6 @@ function simpanEditMenu() {
   if (!nama ||!harga || harga <= 0) return alert('Lengkapi data!');
   const menu = DB.menu.find(m => m.id === id);
   menu.nama = nama;
-  menu.harga = harga
   menu.harga = harga;
   menu.kategori = kategori;
   saveDB();
