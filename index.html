@@ -1073,10 +1073,19 @@ async function printStruk(trx) {
     showPrinterStatus('Gagal print: ' + err.message, 'err');
   }
 }
-</div> <-- penutup modalEdit
-<script> <-- HARUS ADA INI
+  </div> <-- penutup div modal-content
+  </div> <-- penutup div modalEdit
+  <script> <-- BUKA SCRIPT CUMA SEKALI DI SINI
+    let DB = { ... };
+    let currentUser = null;
+    ... semua fungsi JavaScript ...
+    ...
+    async function printStruk(trx) {
+      ...
+      showPrinterStatus('Gagal print: ' + err.message, 'err');
+    }
 
-loadDB();
-</script> <-- HARUS ADA INI
+    loadDB(); // <-- Ini di DALAM script, bukan di luar
+  </script> <-- TUTUP SCRIPT CUMA SEKALI DI SINI
 </body>
 </html>
