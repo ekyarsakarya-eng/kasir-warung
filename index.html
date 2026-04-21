@@ -1073,8 +1073,13 @@ async function printStruk(trx) {
     showPrinterStatus('Gagal print: ' + err.message, 'err');
   }
 }
-
+</div> <-- penutup modalEdit
+<script> <-- HARUS ADA INI
+let DB = {
+  users: { admin: 'admin123', kasir: 'kasir123' },
+  ...
+  ...
 loadDB();
-</script>
+</script> <-- HARUS ADA INI
 </body>
 </html>
