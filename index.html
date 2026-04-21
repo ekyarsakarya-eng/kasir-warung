@@ -98,11 +98,11 @@ th { background: #34495e; color: white; }
     <button class="danger" onclick="logout()" style="width:auto;">Keluar</button>
   </div>
   <div id="adminTabs" class="tabs hidden">
-    <div class="tab active" onclick="showTab('penjualan')">Penjualan</div>
-    <div class="tab" onclick="showTab('menu')">Kelola Menu</div>
-    <div class="tab" onclick="showTab('laporan')">Laporan Harian</div>
-    <div class="tab" onclick="showTab('bulanan')">Laporan Bulanan</div>
-    <div class="tab" onclick="showTab('pengaturan')">Pengaturan</div>
+  <div class="tab active" onclick="showTab('penjualan')">Penjualan</div>
+  <div class="tab admin-only" onclick="showTab('menu')">Kelola Menu</div>
+  <div class="tab" onclick="showTab('laporan')">Laporan Harian</div>
+  <div class="tab admin-only" onclick="showTab('bulanan')">Laporan Bulanan</div>
+  <div class="tab admin-only" onclick="showTab('pengaturan')">Pengaturan</div>
   </div>
   <div id="penjualanTab" class="grid">
     <div class="card">
@@ -206,10 +206,10 @@ th { background: #34495e; color: white; }
       <thead><tr><th>Nama Menu</th><th>Terjual</th><th>Total Pendapatan</th></tr></thead>
       <tbody id="tabelMenuTerlaris"></tbody>
     </table>
-    <div class="flex" style="margin-top:16px;">
-      <button class="purple" onclick="exportLaporanBulanan()">📊 Export Excel Bulanan</button>
-      <button class="secondary" onclick="exportCSV()">📄 Export CSV</button>
-    </div>
+    <div class="flex admin-only" style="margin-top:16px;">
+  <button class="purple" onclick="exportLaporanHarian()">📊 Export Excel Hari Ini</button>
+  <button class="danger" onclick="resetLaporan()">🗑️ Hapus Semua Laporan</button>
+</div>
   </div>
   <div id="pengaturanTab" class="card hidden">
     <h3>🎨 Branding Warung</h3>
@@ -375,7 +375,11 @@ function login() {
     document.getElementById('appPage').classList.remove('hidden');
     document.getElementById('userInfo').innerText = `Login sebagai: ${u}`;
     document.getElementById('roleTitle').innerText = currentRole === 'admin'? 'Dashboard Admin' : 'Kasir Penjualan';
-    if (currentRole === 'admin') document.getElementById('adminTabs').classList.remove('hidden');
+    document.getElementById('adminTabs').classList.remove('hidden');
+if (currentRole === 'kasir') {
+  // Sembunyiin menu yang cuma buat admin
+  document.querySelectorAll('.admin-only').forEach(el => el.classList.add('hidden'));
+}
     loadDB();
     renderMenu();
     renderCart();
