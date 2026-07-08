@@ -1,5 +1,6 @@
 // Konfigurasi Backend
 const BACKEND_URL = 'https://script.google.com/macros/s/AKfycby-s874pM6vjlgzRxejZXbsGeOOY_FLQiyQCZIq_F07DN7Vy1HEuZ-i4YiGtILZYY0/exec'; // Ganti dengan URL deployment GAS Anda
+let useBackend = true;
 
 let DB = {
   users: { admin: 'admin123', kasir: 'kasir123' },
