@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Panel - Kasir Warung Setup</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+    body { background: linear-gradient(135deg, #e8f4f8 0%, #d4e9f7 100%); color: #333; min-height: 100vh; padding: 20px; }
+    .container { max-width: 800px; margin: 0 auto; }
+    .card { background: white; padding: 32px; border-radius: 16px; box-shadow: 0 8px 24px rgba(91, 155, 213, 0.15); margin-bottom: 24px; }
+    h1 { color: #5b9bd5; margin-bottom: 8px; font-size: 28px; }
+    h2 { color: #2c3e50; margin-bottom: 16px; font-size: 22px; }
+    h3 { color: #34495e; margin-bottom: 12px; font-size: 18px; }
+    p { color: #7f8c8d; margin-bottom: 16px; line-height: 1.6; }
+    .info-box { background: #e8f4f8; border-left: 4px solid #5b9bd5; padding: 16px; margin: 16px 0; border-radius: 8px; }
+    .info-box strong { color: #5b9bd5; }
+    .step { background: #f8f9fa; padding: 16px; border-radius: 8px; margin: 12px 0; border-left: 3px solid #5b9bd5; }
+    .step-number { display: inline-block; background: #5b9bd5; color: white; width: 28px; height: 28px; border-radius: 50%; text-align: center; line-height: 28px; font-weight: bold; margin-right: 8px; }
+    button { background: #5b9bd5; color: white; border: none; padding: 12px 24px; border-radius: 8px; font-size: 16px; font-weight: 600; cursor: pointer; transition: all 0.3s; }
+    button:hover { background: #4a8bc2; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(91, 155, 213, 0.3); }
+    button:disabled { background: #bdc3c7; cursor: not-allowed; transform: none; }
+    button.secondary { background: #95a5a6; }
+    button.secondary:hover { background: #7f8c8d; }
+    .status { padding: 12px; border-radius: 8px; margin: 12px 0; font-weight: 600; text-align: center; }
+    .status.ok { background: #d5f4e6; color: #27ae60; }
+    .status.err { background: #fadbd8; color: #e74c3c; }
+    .hidden { display: none; }
+    code { background: #f8f9fa; padding: 2px 6px; border-radius: 4px; font-family: 'Courier New', monospace; color: #e74c3c; }
+    .code-block { background: #2c3e50; color: #ecf0f1; padding: 16px; border-radius: 8px; overflow-x: auto; margin: 12px 0; }
+    .code-block code { background: none; color: #ecf0f1; }
+    input[type="text"] { width: 100%; padding: 12px; border: 2px solid #e8f4f8; border-radius: 8px; font-size: 14px; margin: 8px 0; }
+    input[type="text"]:focus { outline: none; border-color: #5b9bd5; }
+    .flex { display: flex; gap: 12px; margin: 12px 0; }
+    .flex > * { flex: 1; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="card">
+      <h1>🏪 Setup Kasir Warung</h1>
+      <p>Panel administrasi untuk setup awal aplikasi kasir warung dengan Google Apps Script backend</p>
+    </div>
+
+    <div class="card">
+      <h2>📋 Langkah-Langkah Setup</h2>
+      
+      <div class="step">
+        <span class="step-number">1</span>
+        <strong>Buat Google Spreadsheet</strong>
+        <p style="margin-top: 8px;">
+          Buat spreadsheet baru di Google Drive dengan nama <code>Kasir Warung Database</code>
+        </p>
+      </div>
+
+      <div class="step">
+        <span class="step-number">2</span>
+        <strong>Copy Spreadsheet ID</strong>
+        <p style="margin-top: 8px;">
+          Salin ID spreadsheet dari URL:<br>
+          <code>https://docs.google.com/spreadsheets/d/<strong>SPREADSHEET_ID_DISINI</strong>/edit</code>
+        </p>
+        <input type="text" id="spreadsheetId" placeholder="Paste Spreadsheet ID disini...">
+      </div>
+
+      <div class="step">
+        <span class="step-number">3</span>
+        <strong>Setup Google Apps Script</strong>
+        <p style="margin-top: 8px;">
+          Buka spreadsheet → Extensions → Apps Script → Paste kode <code>kode.gs</code> → Ganti <code>SPREADSHEET_ID</code> dengan ID Anda
+        </p>
+      </div>
+
+      <div class="step">
+        <span class="step-number">4</span>
+        <strong>Initialize Spreadsheet</strong>
+        <p style="margin-top: 8px;">
+          Jalankan fungsi <code>initializeSpreadsheet()</code> di Apps Script untuk membuat struktur sheet
+        </p>
+      </div>
+
+      <div class="step">
+        <span class="step-number">5</span>
+        <strong>Deploy Apps Script</strong>
+        <p style="margin-top: 8px;">
+          Deploy → New deployment → Web app → Execute as: Me → Who has access: Anyone → Copy deployment URL
+        </p>
+      </div>
+
+      <div class="step">
+        <span class="step-number">6</span>
+        <strong>Update Frontend</strong>
+        <p style="margin-top: 8px;">
+          Edit <code>app.js</code> → Ganti <code>BACKEND_URL</code> dengan deployment URL → Set <code>useBackend = true</code>
+        </p>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>🔧 Initialize Database</h2>
+      <p>Klik tombol di bawah untuk menjalankan setup awal spreadsheet (buat sheet Users, Menu, Transaksi, Settings)</p>
+      <button onclick="initializeDB()">🚀 Initialize Spreadsheet</button>
+      <div id="initStatus" class="status hidden"></div>
+    </div>
+
+    <div class="card">
+      <h2>📊 Struktur Spreadsheet</h2>
+      <h3>Sheet: Users</h3>
+      <div class="code-block">
+        <code>| username | password |<br>|----------|----------|<br>| admin    | admin123 |<br>| kasir    | kasir123 |</code>
+      </div>
+
+      <h3>Sheet: Menu</h3>
+      <div class="code-block">
+        <code>| id | nama        | harga | kategori |<br>|----|-------------|-------|----------|<br>| 1  | Nasi Goreng | 15000 | Makanan  |<br>| 2  | Mie Ayam    | 12000 | Makanan  |</code>
+      </div>
+
+      <h3>Sheet: Transaksi</h3>
+      <div class="code-block">
+        <code>| id | waktu | waktuDisplay | tanggal | items (JSON) | subtotal | pajak | total | bayar | kembali | kasir |</code>
+      </div>
+
+      <h3>Sheet: Settings</h3>
+      <div class="code-block">
+        <code>| key      | value                  |<br>|----------|------------------------|<br>| namaToko | Warung Makan Barokah   |<br>| alamat   | Jl. Contoh No.123      |<br>| pajak    | 0                      |<br>| logo     | (base64 atau URL)      |<br>| banner   | (base64 atau URL)      |</code>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>🎨 Warna Tema</h2>
+      <p>Aplikasi menggunakan warna soft biru yang lembut dan nyaman di mata:</p>
+      <div class="flex">
+        <div style="background: #5b9bd5; padding: 20px; border-radius: 8px; color: white; text-align: center;">
+          <strong>Primary</strong><br>#5b9bd5
+        </div>
+        <div style="background: #e8f4f8; padding: 20px; border-radius: 8px; color: #333; text-align: center;">
+          <strong>Background</strong><br>#e8f4f8
+        </div>
+        <div style="background: #2c3e50; padding: 20px; border-radius: 8px; color: white; text-align: center;">
+          <strong>Dark</strong><br>#2c3e50
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>✅ Checklist Setup</h2>
+      <ul style="list-style: none; padding: 0;">
+        <li style="padding: 8px 0; border-bottom: 1px solid #eee;">☐ Buat Google Spreadsheet</li>
+        <li style="padding: 8px 0; border-bottom: 1px solid #eee;">☐ Copy Spreadsheet ID</li>
+        <li style="padding: 8px 0; border-bottom: 1px solid #eee;">☐ Paste kode.gs di Apps Script</li>
+        <li style="padding: 8px 0; border-bottom: 1px solid #eee;">☐ Ganti SPREADSHEET_ID di kode.gs</li>
+        <li style="padding: 8px 0; border-bottom: 1px solid #eee;">☐ Jalankan initializeSpreadsheet()</li>
+        <li style="padding: 8px 0; border-bottom: 1px solid #eee;">☐ Deploy Apps Script sebagai Web App</li>
+        <li style="padding: 8px 0; border-bottom: 1px solid #eee;">☐ Copy deployment URL</li>
+        <li style="padding: 8px 0; border-bottom: 1px solid #eee;">☐ Update BACKEND_URL di app.js</li>
+        <li style="padding: 8px 0; border-bottom: 1px solid #eee;">☐ Set useBackend = true di app.js</li>
+        <li style="padding: 8px 0;">☐ Upload semua file ke GitHub Pages</li>
+      </ul>
+    </div>
+  </div>
+
+  <script>
+    function initializeDB() {
+      const spreadsheetId = document.getElementById('spreadsheetId').value.trim();
+      if (!spreadsheetId) {
+        showStatus('❌ Masukkan Spreadsheet ID terlebih dahulu!', 'err');
+        return;
+      }
+
+      showStatus('🔄 Menghubungi Google Apps Script...', 'ok');
+      
+      // Note: Ini hanya contoh, Anda perlu menjalankan initializeSpreadsheet() langsung di Apps Script editor
+      showStatus('✅ Silakan buka Apps Script editor dan jalankan fungsi initializeSpreadsheet() secara manual', 'ok');
+    }
+
+    function showStatus(msg, type) {
+      const el = document.getElementById('initStatus');
+      el.innerText = msg;
+      el.className = 'status ' + type;
+      el.classList.remove('hidden');
+    }
+  </script>
+</body>
+</html>
